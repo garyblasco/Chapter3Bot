@@ -1,0 +1,26 @@
+{
+  "name": "chapter3bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "chapter3bot.js",
+  "dependencies": {
+    "moment": "^2.19.2",
+    "mongodb": "^2.2.33",
+    "node-telegram-bot-api": "^0.29.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1”,
+    “start”: “node chapter3bot.js”
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garyblasco/Chapter3Bot.git"
+  },
+  "author": "gary",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/garyblasco/Chapter3Bot/issues"
+  },
+  "homepage": "https://github.com/garyblasco/Chapter3Bot#readme"
+}
