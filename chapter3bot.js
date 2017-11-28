@@ -2,6 +2,7 @@ const moment = require('moment');
 
 var MongoClient = require('mongodb').MongoClient;
 var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
+var ObjectId = require('mongodb').ObjectID;
 var db
 
 var TelegramBot = require('node-telegram-bot-api');
@@ -60,6 +61,31 @@ telegram.on("text", (message) => {
 });
 
 
+// view instructions
+
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/help') === 0){
+		telegram.sendMessage(message.chat.id, 
+			'*INSTRUCTIONS FOR NUKEBOT!* \n \n'
+			+ 'To *ADD* a target, type the following command: \n \n'
+			+ '*/add (target) (# of nukes) (date/time)* \n \n'
+			+ 'Example command: \n \n'
+			+ '*/add RefohWidel 5 2017-11-30T16:55:00* \n \n'
+			+ '- *(target)* should be a PSN name, like RefohWidel \n'
+			+ '- *(# of nukes)* should be a number, 1, 2, 3, etc. \n'
+			+ '- Use the number of nukes BEFORE your infiltration \n'
+			+ '- *(date/time) MUST* be entered in a specific format: \n'
+			+ '\t *YYYY-MM-DDTHH:MM:SS* \n'
+			+ '- Don\'t forget the *T* between the date and time!\n'
+			+ '- The TIME should always use a 24-hour clock. \n'
+			+ '- Examples: 2017-11-30T13:15:00, 2017-12-30T16:30:00 \n \n'
+			+ 'To view entries, use the following: \n \n'
+			+ '*/all* will display ALL upcoming targets \n'
+			+ '*/day* will display all targets in the next 24 hours' , 
+			{parse_mode: "Markdown"});
+  }
+});
+
 
 // view all after current
 
@@ -94,7 +120,7 @@ telegram.on("text", (message) => {
 	var allResults = 'All targets after ' + currentDate + ': \n \n';
 	var x = 1
 	for (i in result) {
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + result[i]._id + '\n');
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' ' + result[i]._id + '\n');
 		x = x + 1;
 		};
 	telegram.sendMessage(message.chat.id, allResults);
@@ -144,5 +170,32 @@ telegram.on("text", (message) => {
 						});
 						telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
 				};
+	}
+});
+
+
+
+
+// delete a target
+
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/delete') === 0) {
+  
+  	var params = message.text.split(" "); 	// split out the input
+  	console.log(params);
+
+  	toDeleteStr = params[1];
+  	var toDelete = { _id: ObjectId(params[1]) };				// define target ID to delete
+  	console.log('target to delete:' + toDelete);
+ 	
+	if (params.length != 2 ) {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
+  			} else {
+				db.collection("targets").deleteOne(toDelete, function(err, res) {
+					if (err) throw err;
+					console.log("1 document inserted");
+					});
+					telegram.sendMessage(message.chat.id, 'Target deleted: ' + params[1]);
+					};
 	}
 });
