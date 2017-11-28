@@ -15,10 +15,10 @@ MongoClient.connect(dbURL, (err, database) => {
 
 var	TOKEN = '460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk'
 var APP_URL = 'https://mysterious-brushlands-53237.herokuapp.com/'
-const PROC_URL = process.env.{APP_URL}
+const PROC_URL = process.env.APP_URL
 var telegram = new TelegramBot(TOKEN, { webhook: {port: process.env.PORT}, polling: true });
 
-TelegramBot.setWebHook(`{PROC_URL}/bot{TOKEN`};
+TelegramBot.setWebHook(`{PROC_URL}/bot{TOKEN}`);
 
 /* view upcoming -- deprecated
 
