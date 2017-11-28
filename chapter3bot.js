@@ -57,8 +57,10 @@ telegram.on("text", (message) => {
   		if(startDate.isValid() === false ) {
   			telegram.sendMessage(message.chat.id, '*Invalid date!* Please try again.', { parse_mode: "Markdown"});
   			} else if (isNaN(nukes) === true ) {
-  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});}
-				else {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});
+  			} else if (params.length > 4 ) {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* You entered too many parameter. Please try again.', { parse_mode: "Markdown"});
+  			} else {
 					db.collection("targets").insertOne(newTarget, function(err, res) {
 						if (err) throw err;
 						console.log("1 document inserted");
