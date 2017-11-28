@@ -13,32 +13,94 @@ MongoClient.connect(dbURL, (err, database) => {
 	return console.log('Connected!')
 });
 
-// view upcoming
+/* view upcoming -- deprecated
 
 telegram.on("text", (message) => {
-  if(message.text.toLowerCase().indexOf('/upcoming') === 0){
-  	db.collection('targets').find().limit(3).sort({blockadeEnd: 1}).toArray((err, result) => {
+	currentDate = moment.utc(new Date).format();
+  	console.log(currentDate);
+  	if(message.text.toLowerCase().indexOf('/upcoming') === 0){
+  		db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).limit(3).sort({blockadeEnd: 1}).toArray((err, result) => {
+		if (err) return console.log(err);
+		console.log(result);
+		var allResults = 'The next three targets: \n \n';
+		var x = 1
+		for (i in result) {
+			allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
+			x = x + 1;
+			};
+		telegram.sendMessage(message.chat.id, allResults);
+		
+		//telegram.sendMessage(message.chat.id, 'Target 1: ' + result[0].target + ' @ ' + result[0].blockadeEnd + '\n' + 'Target 2: ' + result[1].target + ' @ ' + result[1].blockadeEnd + '\n' + 'Target 3: ' + result[2].target + ' @ ' + result[2].blockadeEnd);
+		});
+  }
+});
+*/
+
+// view all in next 24 hours
+
+telegram.on("text", (message) => {
+  if(message.text.toLowerCase().indexOf('/day') === 0){
+  	var currentDate = new moment.utc();
+  	var nextDay = new moment.utc();
+  	nextDay = nextDay.add(1, 'day');
+  	console.log('current:' + currentDate.format());
+  	console.log('plus 1:' + nextDay.format());
+  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate.format(), $lte : nextDay.format()}}).sort({blockadeEnd: 1}).toArray((err, result) => {
 	if (err) return console.log(err);
 	console.log(result);
-	telegram.sendMessage(message.chat.id, 'Target 1: ' + result[0].target + ' @ ' + result[0].blockadeEnd + '\n' + 'Target 2: ' + result[1].target + ' @ ' + result[1].blockadeEnd + '\n' + 'Target 3: ' + result[2].target + ' @ ' + result[2].blockadeEnd);
+	var allResults = 'All targets in the next 24 hours: \n \n';
+	var x = 1
+	for (i in result) {
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
+		x = x + 1;
+		};
+	telegram.sendMessage(message.chat.id, allResults);
 		});
   }
 });
 
-// view all
+
+
+// view all after current
 
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/all') === 0){
-  	currentDate = moment.utc(new Date);
+  	var currentDate = moment.utc(new Date).format();
   	console.log(currentDate);
   	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
 	if (err) return console.log(err);
 	console.log(result);
-	telegram.sendMessage(message.chat.id, 'Target 1: ' + result[0].target + ' @ ' + result[0].blockadeEnd + '\n' + 'Target 2: ' + result[1].target + ' @ ' + result[1].blockadeEnd + '\n' + 'Target 3: ' + result[2].target + ' @ ' + result[2].blockadeEnd);
+	var allResults = 'All targets after ' + currentDate + ': \n \n';
+	var x = 1
+	for (i in result) {
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
+		x = x + 1;
+		};
+	telegram.sendMessage(message.chat.id, allResults);
 		});
   }
 });
 
+
+// view all after current with IDs
+
+telegram.on("text", (message) => {
+  if(message.text.toLowerCase().indexOf('/id') === 0){
+  	var currentDate = moment.utc(new Date).format();
+  	console.log(currentDate);
+  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
+	if (err) return console.log(err);
+	console.log(result);
+	var allResults = 'All targets after ' + currentDate + ': \n \n';
+	var x = 1
+	for (i in result) {
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + result[i]._id + '\n');
+		x = x + 1;
+		};
+	telegram.sendMessage(message.chat.id, allResults);
+		});
+  }
+});
 
 // add a target
 
