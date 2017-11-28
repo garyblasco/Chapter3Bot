@@ -16,7 +16,7 @@ const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }, polling: true};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 
-const telegram = new TelegramBot(TOKEN, options);
+var telegram = new TelegramBot(TOKEN, options);
 
 telegram.setWebHook(`${url}${TOKEN}`);
 
