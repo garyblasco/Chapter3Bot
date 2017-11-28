@@ -13,7 +13,7 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
-const options = { webHook: { port: process.env.PORT }, polling: true};
+const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 
 var telegram = new TelegramBot(TOKEN, options);
