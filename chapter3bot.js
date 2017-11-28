@@ -58,8 +58,8 @@ telegram.on("text", (message) => {
   			telegram.sendMessage(message.chat.id, '*Invalid date!* Please try again.', { parse_mode: "Markdown"});
   			} else if (isNaN(nukes) === true ) {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});
-  			} else if (params.length > 4 ) {
-  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please try again using /add [target] [# of nukes] [YYYY-MM-DD*T*HH:MM:SS]', { parse_mode: "Markdown"});
+  			} else if (params.length != 4 ) {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please try again using: /add (target) (# of nukes) (YYYY-MM-DDTHH:MM:SS)', { parse_mode: "Markdown"});
   			} else {
 					db.collection("targets").insertOne(newTarget, function(err, res) {
 						if (err) throw err;
