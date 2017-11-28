@@ -3,7 +3,7 @@ const moment = require('moment');
 var MongoClient = require('mongodb').MongoClient;
 var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
 var ObjectId = require('mongodb').ObjectID;
-var db
+var db;
 var TelegramBot = require('node-telegram-bot-api');
 
 MongoClient.connect(dbURL, (err, database) => {
@@ -14,7 +14,7 @@ MongoClient.connect(dbURL, (err, database) => {
 
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }, polling: true};
-const url = process.env.APP_URL || // 'https://<app-name>.herokuapp.com:443';
+const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 
 const telegram = new TelegramBot(TOKEN, options);
 
