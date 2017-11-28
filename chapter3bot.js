@@ -4,7 +4,6 @@ var MongoClient = require('mongodb').MongoClient;
 var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
 var ObjectId = require('mongodb').ObjectID;
 var db
-
 var TelegramBot = require('node-telegram-bot-api');
 
 MongoClient.connect(dbURL, (err, database) => {
@@ -13,12 +12,14 @@ MongoClient.connect(dbURL, (err, database) => {
 	return console.log('Connected!')
 });
 
-var	TOKEN = '460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk'
-var APP_URL = 'https://mysterious-brushlands-53237.herokuapp.com/'
-const PROC_URL = process.env.APP_URL
-var telegram = new TelegramBot(TOKEN, { webhook: {port: process.env.PORT}, polling: true });
+const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
+const options = { webHook: { port: process.env.PORT }, polling: true};
+const url = process.env.APP_URL || // 'https://<app-name>.herokuapp.com:443';
 
-TelegramBot.setWebHook(`{PROC_URL}/bot{TOKEN}`);
+const telegram = new TelegramBot(TOKEN, options);
+
+telegram.setWebHook(`${url}${TOKEN}`);
+
 
 /* view upcoming -- deprecated
 
