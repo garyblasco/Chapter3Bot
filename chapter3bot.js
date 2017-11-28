@@ -1,7 +1,7 @@
-var MongoClient = require('mongodb').MongoClient;
-var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
 const moment = require('moment');
 
+var MongoClient = require('mongodb').MongoClient;
+var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
 var db
 
 var TelegramBot = require('node-telegram-bot-api');
@@ -13,6 +13,8 @@ MongoClient.connect(dbURL, (err, database) => {
 	return console.log('Connected!')
 });
 
+// view upcoming
+
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/upcoming') === 0){
   	db.collection('targets').find().limit(3).sort({blockadeEnd: 1}).toArray((err, result) => {
@@ -23,9 +25,10 @@ telegram.on("text", (message) => {
   }
 });
 
+// add a target
 
 telegram.on("text", (message) => {
-  if(message.text.toLowerCase().indexOf('/add') === 0){
+  if(message.text.toLowerCase().indexOf('/add') === 0) {
   
   	var params = message.text.split(" "); // split out the input
   	console.log(params);
@@ -35,8 +38,8 @@ telegram.on("text", (message) => {
   	var nukes = Number(params[2]);		//convert nuke str to int
   	console.log(nukes);
 	var blockadeDays = nukes;
-	if (blockadeDays >= 6) {			//convert nukes to blockage length
-		blockadeDays = 6;};
+	if (blockadeDays >= 6) {
+		blockadeDays = 6 }; 			//convert nukes to blockage length
 	console.log('blockade days: ' + blockadeDays);  	
 
 
@@ -47,21 +50,20 @@ telegram.on("text", (message) => {
  
  	//create json object for database
  	
-   	var newTarget = { target: target, nukes: nukes, blockadeStart: startDate.format(), blockadeEnd:  endDate.format()};
+   	var newTarget = { target: target, nukes: nukes, blockadeStart: startDate.format(), blockadeEnd:  endDate.format() };
  
  	//test for bad date
  	
   		if(startDate.isValid() === false ) {
   			telegram.sendMessage(message.chat.id, '*Invalid date!* Please try again.', { parse_mode: "Markdown"});
-  			} if (isNaN(nukes) === true ) {
+  			} else if (isNaN(nukes) === true ) {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});}
-  			else {
-  				db.collection("targets").insertOne(newTarget, function(err, res) {
-					if (err) throw err;
-					console.log("1 document inserted");
-					});
-					telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
+				else {
+					db.collection("targets").insertOne(newTarget, function(err, res) {
+						if (err) throw err;
+						console.log("1 document inserted");
+						});
+						telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
 				};
-
-		}
-	});
+	}
+});
