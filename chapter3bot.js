@@ -31,7 +31,7 @@ telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/all') === 0){
   	currentDate = moment.utc(new Date);
   	console.log(currentDate);
-  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).limit().sort({blockadeEnd: 1}).toArray((err, result) => {
+  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
 	if (err) return console.log(err);
 	console.log(result);
 	telegram.sendMessage(message.chat.id, 'Target 1: ' + result[0].target + ' @ ' + result[0].blockadeEnd + '\n' + 'Target 2: ' + result[1].target + ' @ ' + result[1].blockadeEnd + '\n' + 'Target 3: ' + result[2].target + ' @ ' + result[2].blockadeEnd);
