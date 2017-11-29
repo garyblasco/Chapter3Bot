@@ -248,3 +248,4 @@ telegram.onText(/\/test/, function test(msg) {
 	  	telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
 	})
 });
+//
