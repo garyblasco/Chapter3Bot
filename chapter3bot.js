@@ -227,6 +227,7 @@ telegram.on("text", (message) => {
 	}
 });
 
+/*
 // Matches /test
 telegram.onText(/\/test/, function test(msg) {
   const inputMonths = {
@@ -248,4 +249,4 @@ telegram.onText(/\/test/, function test(msg) {
 	  	telegram.sendMessage(msg2.chat.id, 'Pick a day.', inputDay);
 	})
 });
-//
+*/
