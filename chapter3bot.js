@@ -206,3 +206,19 @@ telegram.on("text", (message) => {
 					};
 	}
 });
+
+
+// get current UTC
+
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/current') === 0) {
+  
+  	var currentDate = new moment.utc()
+
+	if (params.length != 1 ) {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
+  			} else {
+					telegram.sendMessage(message.chat.id, currentDate.format());
+					};
+	}
+});
