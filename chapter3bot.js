@@ -243,7 +243,7 @@ telegram.onText(/\/test/, function test(msg) {
 		['4', '5', '6'] ] },
     'one_time_keyboard': true
 	};
-*/
+
   telegram.sendMessage(msg.chat.id, 'Pick a month.', inputMonths).then(() => {
   	telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
 });
