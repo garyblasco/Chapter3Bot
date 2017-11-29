@@ -213,7 +213,11 @@ telegram.on("text", (message) => {
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/current') === 0) {
   
+    var params = message.text.split(" "); 	// split out the input
+  	console.log(params);
+  	
   	var currentDate = new moment.utc()
+  	console.log(currentDate);
 
 	if (params.length != 1 ) {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
