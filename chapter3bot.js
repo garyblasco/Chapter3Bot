@@ -235,20 +235,20 @@ telegram.onText(/\/test/, function test(msg) {
       keyboard: [
         ['Jan'],
         ['Feb'],
-        ['Mar'],
+        ['Mar'] ], [
         ['Apr'],
         ['May'],
-        ['Jun'],
+        ['Jun'] ], [
         ['Jul'],
         ['Aug'],
-        ['Sep'],
+        ['Sep'] ], [
         ['Oct'],
         ['Nov'],
-        ['Dec']
+        ['Dec'] 
       ]
     })
   };
-  const inputDay = {
+/*  const inputDay = {
     reply_to_message_id: msg.message_id,
     reply_markup: JSON.stringify({
       keyboard: [
@@ -267,6 +267,7 @@ telegram.onText(/\/test/, function test(msg) {
       ]
     })
   };
+*/
   telegram.sendMessage(msg.chat.id, 'Pick a month.', inputMonths);
-  telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
+//  telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
 });
