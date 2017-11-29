@@ -236,15 +236,15 @@ telegram.onText(/\/test/, function test(msg) {
 		['Apr', 'May', 'Jun'] ] },
     'one_time_keyboard': true
 	};
-  const inputDay = {
-    'reply_to_message_id': msg.message_id,
-    'reply_markup': { 'keyboard' : [ 
-		[ '1', '2', '3'],
-		['4', '5', '6'] ] },
-    'one_time_keyboard': true
-	};
 
-  telegram.sendMessage(msg.chat.id, 'Pick a month.', inputMonths).then(() => {
-  	telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
+	telegram.sendMessage(msg.chat.id, 'Pick a month.', function nexttest(msg2) {	
+	  const inputDay = {
+		'reply_to_message_id': msg2.message_id,
+		'reply_markup': { 'keyboard' : [ 
+			[ '1', '2', '3'],
+			['4', '5', '6'] ] },
+		'one_time_keyboard': true
+		};
+	  	telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
 	})
 });
