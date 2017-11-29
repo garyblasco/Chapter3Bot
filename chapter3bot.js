@@ -248,6 +248,6 @@ telegram.onText(/\/test/, function test(msg) {
       ]
     })
   };
-  telegram.sendMessage(msg.chat.id, 'Do you love me?', inputMonths);
+  telegram.sendMessage(msg.chat.id, 'Pick a month.', inputMonths);
   
 });
