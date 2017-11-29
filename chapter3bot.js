@@ -233,7 +233,7 @@ telegram.onText(/\/test/, function test(msg) {
     reply_to_message_id: msg.message_id,
     reply_markup: JSON.stringify({
       keyboard: 
-      [ {'Jan'}, {'Feb'}, {'Mar'} ]
+      [ { text: 'Jan'}, {text: 'Feb'}, { text: 'Mar'} ]
     })
   };
 /*  const inputDay = {
