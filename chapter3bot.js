@@ -245,7 +245,7 @@ telegram.onText(/\/test/, function test(msg) {
 			['4', '5', '6'] ] },
 		'one_time_keyboard': true
 		};
-	  	telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDay);
+	  	telegram.sendMessage(msg2.chat.id, 'Pick a day.', inputDay);
 	})
 });
 //
