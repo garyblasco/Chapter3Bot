@@ -231,7 +231,8 @@ telegram.on("text", (message) => {
 telegram.onText(/\/test/, function test(msg) {
   const inputMonths = {
     'reply_to_message_id': msg.message_id,
-    'reply_markup': { 'keyboard' : [ [ text: 'Jan'], [text: 'Feb'], [ text: 'Mar'] ] }
+    'reply_markup': { 'keyboard' : [ ['Jan'], ['Feb'], ['Mar'] ] },
+    'one_time_keyboard': true
 	};
 /*  const inputDay = {
     reply_to_message_id: msg.message_id,
