@@ -6,7 +6,8 @@
   "dependencies": {
     "moment": "^2.19.2",
     "mongodb": "^2.2.33",
-    "node-telegram-bot-api": "^0.29.0"
+    "node-telegram-bot-api": "^0.29.0",
+    "promise": "^8.0.1"
   },
   "devDependencies": {},
   "scripts": {
