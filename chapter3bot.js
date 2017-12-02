@@ -25,30 +25,6 @@ telegram.setWebHook(`${url}${TOKEN}`);
 //var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
 
 
-
-/* view upcoming -- deprecated
-
-telegram.on("text", (message) => {
-	currentDate = moment.utc(new Date).format();
-  	console.log(currentDate);
-  	if(message.text.toLowerCase().indexOf('/upcoming') === 0){
-  		db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).limit(3).sort({blockadeEnd: 1}).toArray((err, result) => {
-		if (err) return console.log(err);
-		console.log(result);
-		var allResults = 'The next three targets: \n \n';
-		var x = 1
-		for (i in result) {
-			allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
-			x = x + 1;
-			};
-		telegram.sendMessage(message.chat.id, allResults);
-		
-		//telegram.sendMessage(message.chat.id, 'Target 1: ' + result[0].target + ' @ ' + result[0].blockadeEnd + '\n' + 'Target 2: ' + result[1].target + ' @ ' + result[1].blockadeEnd + '\n' + 'Target 3: ' + result[2].target + ' @ ' + result[2].blockadeEnd);
-		});
-  }
-});
-*/
-
 // view all in next 24 hours
 
 telegram.on("text", (message) => {
