@@ -64,8 +64,7 @@ telegram.on("text", (message) => {
 	var allResults = 'All targets in the next 24 hours: \n \n';
 	var x = 1
 	for (i in result) {
-		currentResult = new moment.utc(result[i].blockadeEnd);
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
 		x = x + 1;
 		};
 	telegram.sendMessage(message.chat.id, allResults);
@@ -112,8 +111,7 @@ telegram.on("text", (message) => {
 	var allResults = 'All targets after ' + currentDate + ': \n \n';
 	var x = 1
 	for (i in result) {
-		currentResult = new moment.utc(result[i].blockadeEnd);
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' UTC \n');
 		x = x + 1;
 		};
 	telegram.sendMessage(message.chat.id, allResults);
@@ -134,7 +132,7 @@ telegram.on("text", (message) => {
 	var allResults = 'All targets after ' + currentDate + ': \n \n';
 	var x = 1
 	for (i in result) {
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' //  ' + result[i]._id + '\n');
+		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' ' + result[i]._id + '\n');
 		x = x + 1;
 		};
 	telegram.sendMessage(message.chat.id, allResults);
@@ -377,9 +375,9 @@ telegram.onText(/\/test/, function (msg) {
 	        
 */    
  
-telegram.onText(/\/test/, function (startmsg) {
+telegram.onText(/\/test/, function (msg) {
 
-	var addArray = startmsg.text.split(" ");
+	var addArray = msg.text.split(" ");
 	var addName = addArray[1];
 	
 	console.log(addName);
@@ -392,184 +390,157 @@ telegram.onText(/\/test/, function (startmsg) {
 	var nukes = '';
 	var theYear = moment().year();
 
-	var nukesReg = new RegExp(/N\d\d/);
+
+  	const keyMonths = {
+		'reply_to_message_id': msg.message_id,
+		'reply_markup': { 'keyboard' : [ 
+			[ 'Jan.', 'Feb.', 'Mar.', 'Apr.'],
+			[ 'May.', 'Jun.', 'Jul.', 'Aug.'], 
+			[ 'Sep.', 'Oct.', 'Nov.', 'Dec.'] ],
+    		'one_time_keyboard': true,
+    		'selective': true,
+			}	};
+			
+		
 	var monthReg = new RegExp(/\S\S\S\./);
 	var dayReg = new RegExp(/D\d\d/);
 	var hourReg = new RegExp(/H\d\d/);
 	var minReg = new RegExp(/M\d\d/);
 	var confirmReg = new RegExp(/\S\S\S\S\S\S/);
+		
+	telegram.sendMessage(msg.chat.id, 'Please pick a month.', keyMonths )
+    .then(payload => { telegram.onText(monthReg, function (msg2) {
+    
+    
+    	telegram.removeTextListener(monthReg);
 
+    	inMonths = msg2.text; 
+		if (msg2.text === "Jan.") { inMonths = "01" }
+		else if (msg2.text === "Feb.") { inMonths = "02" }
+		else if (msg2.text === "Mar.") { inMonths = "03" }
+		else if (msg2.text === "Apr.") { inMonths = "04" }
+		else if (msg2.text === "May.") { inMonths = "05" }
+		else if (msg2.text === "Jun.") { inMonths = "06" }
+		else if (msg2.text === "Jul.") { inMonths = "07" }
+		else if (msg2.text === "Aug.") { inMonths = "08" }
+		else if (msg2.text === "Sep.") { inMonths = "09" }
+		else if (msg2.text === "Oct.") { inMonths = "10" }
+		else if (msg2.text === "Nov.") { inMonths = "11" }
+		else if (msg2.text === "Dec.") { inMonths = "12" };
+		
 
-
- 	const keyNukes = {
-		'reply_to_message_id': startmsg.message_id,
+    	const keyDays = {
+		'reply_to_message_id': msg2.message_id,
 		'reply_markup': { 'keyboard' : [ 
-			[ 'N01', 'N02', 'N03', 'N04'],
-			[ 'N05', 'N06', 'N07', 'N08'], 
-			[ 'N09', 'N10', 'N11', 'N12'],
-			[ 'N13', 'N14', 'N15', 'N16'] ],
+			[ 'D01', 'D02', 'D03', 'D04', 'D05', 'D06', 'D07'],
+			[ 'D08', 'D09', 'D10', 'D11', 'D12', 'D13', 'D14'],
+			[ 'D15', 'D16', 'D17', 'D18', 'D19', 'D20', 'D21'],
+			[ 'D22', 'D23', 'D24', 'D25', 'D26', 'D27', 'D28'],
+			[ 'D29', 'D30', 'D31', '--', '--', '--', '--'] ],
     		'one_time_keyboard': true,
     		'selective': true,
 			}};
-		
-	telegram.sendMessage(startmsg.chat.id, 'How many nukes did the target have at the start of your infiltration?', keyNukes )
-    .then(nukespayload => { telegram.onText(nukesReg, function (msg) {
+			
+			
+    	if ( payload.id == msg2.reply_to_message.id ) {
+    		console.log('ask for month id: ' + payload.message_id + ' new input responding to: ' + msg2.reply_to_message.message_id);
+			telegram.sendMessage(msg2.chat.id, 'Please pick a day.', keyDays )
+			.then(payload2 => { 
+				telegram.onText(dayReg, function (msg3) {
 
-		console.log('HELLO???');
-		telegram.removeTextListener(nukesReg);
-
-		intNukes = Number(msg.text.substring(1,3));
-		console.log(intNukes);
-		
-		const keyMonths = {
-			'reply_to_message_id': msg.message_id,
+			telegram.removeTextListener(dayReg);
+			
+			inDays = msg3.text.substring(1,3);
+			const keyHours = {
+			'reply_to_message_id': msg3.message_id,
 			'reply_markup': { 'keyboard' : [ 
-				[ 'Jan.', 'Feb.', 'Mar.', 'Apr.'],
-				[ 'May.', 'Jun.', 'Jul.', 'Aug.'], 
-				[ 'Sep.', 'Oct.', 'Nov.', 'Dec.'] ],
-				'one_time_keyboard': true,
-				'selective': true,
-				}};
-			
-		if ( nukespayload.id == msg.reply_to_message.id ) {
-		telegram.sendMessage(msg.chat.id, 'Please pick a month.', keyMonths )
-		.then(payload => { telegram.onText(monthReg, function (msg2) {
-	
-	
-			telegram.removeTextListener(monthReg);
-
-			inMonths = msg2.text; 
-			if (msg2.text === "Jan.") { inMonths = "01" }
-			else if (msg2.text === "Feb.") { inMonths = "02" }
-			else if (msg2.text === "Mar.") { inMonths = "03" }
-			else if (msg2.text === "Apr.") { inMonths = "04" }
-			else if (msg2.text === "May.") { inMonths = "05" }
-			else if (msg2.text === "Jun.") { inMonths = "06" }
-			else if (msg2.text === "Jul.") { inMonths = "07" }
-			else if (msg2.text === "Aug.") { inMonths = "08" }
-			else if (msg2.text === "Sep.") { inMonths = "09" }
-			else if (msg2.text === "Oct.") { inMonths = "10" }
-			else if (msg2.text === "Nov.") { inMonths = "11" }
-			else if (msg2.text === "Dec.") { inMonths = "12" };
-		
-
-			const keyDays = {
-			'reply_to_message_id': msg2.message_id,
-			'reply_markup': { 'keyboard' : [ 
-				[ 'D01', 'D02', 'D03', 'D04', 'D05', 'D06', 'D07'],
-				[ 'D08', 'D09', 'D10', 'D11', 'D12', 'D13', 'D14'],
-				[ 'D15', 'D16', 'D17', 'D18', 'D19', 'D20', 'D21'],
-				[ 'D22', 'D23', 'D24', 'D25', 'D26', 'D27', 'D28'],
-				[ 'D29', 'D30', 'D31', '--', '--', '--', '--'] ],
-				'one_time_keyboard': true,
-				'selective': true,
-				}};
+				[ 'H00', 'H01', 'H02', 'H03', 'H04', 'H05'],
+				[ 'H06', 'H07', 'H08', 'H09', 'H10', 'H11'],
+				[ 'H12', 'H13', 'H14', 'H15', 'H16', 'H17'],
+				[ 'H18', 'H19', 'H20', 'H21', 'H22', 'H23'] ],
+    		'one_time_keyboard': true,
+    		'selective': true,
+			}};
 			
 			
-			if ( payload.id == msg2.reply_to_message.id ) {
-				console.log('ask for month id: ' + payload.message_id + ' new input responding to: ' + msg2.reply_to_message.message_id);
-				telegram.sendMessage(msg2.chat.id, 'Please pick a day.', keyDays )
-				.then(payload2 => { 
-					telegram.onText(dayReg, function (msg3) {
-
-				telegram.removeTextListener(dayReg);
-			
-				inDays = msg3.text.substring(1,3);
-				const keyHours = {
-				'reply_to_message_id': msg3.message_id,
+    		if ( payload2.id == msg3.reply_to_message.id ) {
+    			console.log('ask for days id: ' + payload2.message_id + ' new input responding to: ' + msg3.reply_to_message.message_id);
+				telegram.sendMessage(msg3.chat.id, 'Please pick the hour (UTC, 24-hour clock).', keyHours )
+				.then(payload3 => { 
+					telegram.onText(hourReg, function (msg4) {
+				
+				telegram.removeTextListener(hourReg);
+				
+				inHours = msg4.text.substring(1,3);
+				const keyMinutes = {
+				'reply_to_message_id': msg4.message_id,
 				'reply_markup': { 'keyboard' : [ 
-					[ 'H00', 'H01', 'H02', 'H03', 'H04', 'H05'],
-					[ 'H06', 'H07', 'H08', 'H09', 'H10', 'H11'],
-					[ 'H12', 'H13', 'H14', 'H15', 'H16', 'H17'],
-					[ 'H18', 'H19', 'H20', 'H21', 'H22', 'H23'] ],
-				'one_time_keyboard': true,
-				'selective': true,
-				}};
-			
-			
-				if ( payload2.id == msg3.reply_to_message.id ) {
-					console.log('ask for days id: ' + payload2.message_id + ' new input responding to: ' + msg3.reply_to_message.message_id);
-					telegram.sendMessage(msg3.chat.id, 'Please pick the hour (UTC, 24-hour clock).', keyHours )
-					.then(payload3 => { 
-						telegram.onText(hourReg, function (msg4) {
-				
-					telegram.removeTextListener(hourReg);
-				
-					inHours = msg4.text.substring(1,3);
-					const keyMinutes = {
-					'reply_to_message_id': msg4.message_id,
-					'reply_markup': { 'keyboard' : [ 
-						[ 'M00', 'M05', 'M10', 'M15'],
-						[ 'M20', 'M25', 'M30', 'M35'],
-						[ 'M40', 'M45', 'M50', 'M55'] ],
-						'one_time_keyboard': true,
-						'selective': true,
-						}};
+					[ 'M00', 'M05', 'M10', 'M15'],
+					[ 'M20', 'M25', 'M30', 'M35'],
+					[ 'M40', 'M45', 'M50', 'M55'] ],
+					'one_time_keyboard': true,
+					'selective': true,
+					}};
 					
 							
-					if ( payload3.id == msg4.reply_to_message.id ) {
-						console.log('ask for hours id: ' + payload3.message_id + ' new input responding to: ' + msg4.reply_to_message.message_id);
-						telegram.sendMessage(msg4.chat.id, 'Please pick the minutes.', keyMinutes )
-						.then(payload4 => { 
-							telegram.onText(minReg, function (msg5) {
+				if ( payload3.id == msg4.reply_to_message.id ) {
+    				console.log('ask for hours id: ' + payload3.message_id + ' new input responding to: ' + msg4.reply_to_message.message_id);
+					telegram.sendMessage(msg4.chat.id, 'Please pick the minutes.', keyMinutes )
+					.then(payload4 => { 
+						telegram.onText(minReg, function (msg5) {
 					
+					telegram.removeTextListener(minReg);
+					inMinutes = msg5.text.substring(1,3);
+					console.log('substring minutes: ' + inMinutes);
+					const finalMsg = {
+						'reply_to_message_id': msg5.message_id,
+						'reply_markup': 
+							{ 'keyboard' : [ 
+								['Submit'] , 
+								['Cancel'] ],  
+							'one_time_keyboard': true, 
+							'selective': true }
+							};
+				
+					
+					var finalDateString = theYear + '-' + inMonths + '-' + inDays + 'T' + inHours + ':' + inMinutes + ':' + '00';
+					
+					var blockadeDays = nukes;
+					if (blockadeDays >= 6) {
+						blockadeDays = 6 }; 			//convert nukes to blockage length
+						console.log('blockade days: ' + blockadeDays);  
+					
+					
+					
+					
+					if ( payload4.id == msg5.reply_to_message.id ) {
+						console.log('last outgoing: ' + payload4.message_id + ' last incoming: ' + msg5.reply_to_message.message_id);
+						telegram.sendMessage(msg5.chat.id, 'Please review the below and SUBMIT or CANCEL. \n' + 'Target: ' + addName + '\n' + 'Attack Date: ' + finalDateString + '\n' + 'Blockade End: ' , finalMsg )
+						.then(payload5 => { 
+							telegram.onText(confirmReg, function (msg6) {
+
+
+						console.log(msg6.text);
+						telegram.removeTextListener(monthReg);
+						telegram.removeTextListener(dayReg);
+						telegram.removeTextListener(hourReg);
 						telegram.removeTextListener(minReg);
-						inMinutes = msg5.text.substring(1,3);
-						console.log('substring minutes: ' + inMinutes);
-						const finalMsg = {
-							'reply_to_message_id': msg5.message_id,
-							'reply_markup': 
-								{ 'keyboard' : [ 
-									['Submit'] , 
-									['Cancel'] ],  
-								'one_time_keyboard': true, 
+						telegram.removeTextListener(confirmReg);
+
+						const closeOut = {
+							'reply_markup': {
+								'one_time_keyboard': true,
 								'selective': true }
 								};
-				
-					
-						var finalDateString = theYear + '-' + inMonths + '-' + inDays + 'T' + inHours + ':' + inMinutes + ':' + '00';
-					
-						var blockadeDays = intNukes;
-						if (intNukes >= 6) {
-							blockadeDays = 6 }; 			//convert nukes to blockage length
-							console.log('nukes: ' + intNukes + '\n' + 'blockade days: ' + blockadeDays);  
-				
 
-						var startDate = moment.utc(finalDateString);			//define start date
-						console.log('start date: ' + startDate.format());
-						var endDate = moment.utc(finalDateString);				//define end date
-						endDate = moment.utc(endDate).add(blockadeDays, 'days'); //add nukes to end date
- 
-					
-					
-						if ( payload4.id == msg5.reply_to_message.id ) {
-							console.log('last outgoing: ' + payload4.message_id + ' last incoming: ' + msg5.reply_to_message.message_id);
-							telegram.sendMessage(msg5.chat.id, 'Please review the below and SUBMIT or CANCEL. \n \n' + 'Target: ' + addName + '\n' + 'Nukes: ' + intNukes + '\n' + 'Attack Date: ' + startDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC' + '\n' + 'Blockade End: ' + endDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC', finalMsg )
-							.then(payload5 => { 
-								telegram.onText(confirmReg, function (msg6) {
-
-
-							console.log(msg6.text);
-							telegram.removeTextListener(monthReg);
-							telegram.removeTextListener(dayReg);
-							telegram.removeTextListener(hourReg);
-							telegram.removeTextListener(minReg);
-							telegram.removeTextListener(confirmReg);
-
-							const closeOut = {
-								'reply_markup': {
-									'one_time_keyboard': true,
-									'selective': true }
-									};
-
-							if (msg6.text == 'Submit') {
-								telegram.sendMessage(msg6.chat.id, 'Added a new target! And how!', closeOut);
-								telegram.removeTextListener(confirmReg) }
-							else {telegram.sendMessage(msg6.chat.id, 'Snake, what\'s wrong? Snake?! Snaaaaake!', closeOut);
-								telegram.removeTextListener(confirmReg) };
+						if (msg6.text == 'Submit') {
+							telegram.sendMessage(msg6.chat.id, 'Added a new target! And how!', closeOut);
+							telegram.removeTextListener(confirmReg) }
+						else {telegram.sendMessage(msg6.chat.id, 'Snake, what\'s wrong? Snake?! Snaaaaake!', closeOut);
+							telegram.removeTextListener(confirmReg) };
 						
 						
-		})})}})})}})})}})})}})})}})})});	
+		})})}})})}})})}})})}})})});	
 		
 		
 		
