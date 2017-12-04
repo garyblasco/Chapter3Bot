@@ -14,16 +14,15 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 // HEROKU 
-/*
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-*/
+
 
 //LOCAL TESTING
-var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+//var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
 
 
 // view all in next 24 hours
