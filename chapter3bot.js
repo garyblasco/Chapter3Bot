@@ -13,16 +13,17 @@ MongoClient.connect(dbURL, (err, database) => {
 	return console.log('Connected!')
 });
 
-// HEROKU
+// HEROKU 
+/*
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-
+*/
 
 //LOCAL TESTING
-//var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
 
 
 // view all in next 24 hours
@@ -93,9 +94,8 @@ telegram.on("text", (message) => {
 		x = x + 1;
 		};
 	telegram.sendMessage(message.chat.id, allResults);
-		});
-  }
-});
+
+	})}});
 
 
 // view all after current with IDs
@@ -205,10 +205,15 @@ telegram.on("text", (message) => {
 	if (params.length != 1 ) {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
   			} else {
-					telegram.sendMessage(message.chat.id, currentDate.format());
+					telegram.sendMessage(message.chat.id, currentDate.format())
+					.then( prevmsg => {
+  					console.log('pin test')
+  					console.log(JSON.stringify(prevmsg));
+						telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
+					});
 					};
-	}
-});
+	}}
+);
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/alive') === 0) {
@@ -355,6 +360,7 @@ telegram.onText(/\/test/, function (msg) {
  
 telegram.onText(/\/test/, function (startmsg) {
 
+	var initUser = startmsg.from.id;
 	var addArray = startmsg.text.split(" ");
 	var addName = addArray[1];
 	
@@ -376,7 +382,6 @@ telegram.onText(/\/test/, function (startmsg) {
 	var confirmReg = new RegExp(/\S\S\S\S\S\S/);
 
 
-
  	const keyNukes = {
 		'reply_to_message_id': startmsg.message_id,
 		'reply_markup': { 'keyboard' : [ 
@@ -394,6 +399,9 @@ telegram.onText(/\/test/, function (startmsg) {
 		console.log('HELLO???');
 		telegram.removeTextListener(nukesReg);
 
+		console.log(JSON.stringify(startmsg));
+		console.log(JSON.stringify(nukespayload));
+		console.log(JSON.stringify(msg));
 		intNukes = Number(msg.text.substring(1,3));
 		console.log(intNukes);
 		
@@ -406,8 +414,8 @@ telegram.onText(/\/test/, function (startmsg) {
 				'one_time_keyboard': true,
 				'selective': true,
 				}};
-			
-		if ( nukespayload.id == msg.reply_to_message.id ) {
+			//nukespayload.id == msg.reply_to_message.id
+		if ( msg.from.id == initUser ) {
 		telegram.sendMessage(msg.chat.id, 'Please pick a month.', keyMonths )
 		.then(payload => { telegram.onText(monthReg, function (msg2) {
 	
@@ -442,8 +450,8 @@ telegram.onText(/\/test/, function (startmsg) {
 				}};
 			
 			
-			if ( payload.id == msg2.reply_to_message.id ) {
-				console.log('ask for month id: ' + payload.message_id + ' new input responding to: ' + msg2.reply_to_message.message_id);
+			if ( msg2.from.id == initUser ) {
+				//console.log('ask for month id: ' + payload.message_id + ' new input responding to: ' + msg2.reply_to_message.message_id);
 				telegram.sendMessage(msg2.chat.id, 'Please pick a day.', keyDays )
 				.then(payload2 => { 
 					telegram.onText(dayReg, function (msg3) {
@@ -463,8 +471,8 @@ telegram.onText(/\/test/, function (startmsg) {
 				}};
 			
 			
-				if ( payload2.id == msg3.reply_to_message.id ) {
-					console.log('ask for days id: ' + payload2.message_id + ' new input responding to: ' + msg3.reply_to_message.message_id);
+				if ( msg3.from.id == initUser ) {
+					//console.log('ask for days id: ' + payload2.message_id + ' new input responding to: ' + msg3.reply_to_message.message_id);
 					telegram.sendMessage(msg3.chat.id, 'Please pick the hour (UTC, 24-hour clock).', keyHours )
 					.then(payload3 => { 
 						telegram.onText(hourReg, function (msg4) {
@@ -483,8 +491,8 @@ telegram.onText(/\/test/, function (startmsg) {
 						}};
 					
 							
-					if ( payload3.id == msg4.reply_to_message.id ) {
-						console.log('ask for hours id: ' + payload3.message_id + ' new input responding to: ' + msg4.reply_to_message.message_id);
+					if ( msg4.from.id == initUser) {
+						//console.log('ask for hours id: ' + payload3.message_id + ' new input responding to: ' + msg4.reply_to_message.message_id);
 						telegram.sendMessage(msg4.chat.id, 'Please pick the minutes.', keyMinutes )
 						.then(payload4 => { 
 							telegram.onText(minReg, function (msg5) {
@@ -518,8 +526,8 @@ telegram.onText(/\/test/, function (startmsg) {
  
 					
 					
-						if ( payload4.id == msg5.reply_to_message.id ) {
-							console.log('last outgoing: ' + payload4.message_id + ' last incoming: ' + msg5.reply_to_message.message_id);
+						if ( msg5.from.id == initUser ) {
+							//console.log('last outgoing: ' + payload4.message_id + ' last incoming: ' + msg5.reply_to_message.message_id);
 							telegram.sendMessage(msg5.chat.id, 'Please review the below and SUBMIT or CANCEL. \n \n' + 'Target: ' + addName + '\n' + 'Nukes: ' + intNukes + '\n' + 'Attack Date: ' + startDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC' + '\n' + 'Blockade End: ' + endDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC', finalMsg )
 							.then(payload5 => { 
 								telegram.onText(confirmReg, function (msg6) {
@@ -534,7 +542,7 @@ telegram.onText(/\/test/, function (startmsg) {
 
 							const closeOut = {
 								'reply_markup': {
-									'one_time_keyboard': true,
+									'remove_keyboard': true,
 									'selective': true }
 									};
 
