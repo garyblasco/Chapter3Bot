@@ -10,10 +10,10 @@ var promise = require('promise');
 MongoClient.connect(dbURL, (err, database) => {
 	if (err) return console.log('Error!');
 	db = database;
-	return console.log('Connected!')
+	return console.log('Connected to database!')
 });
 
-// HEROKU 
+// HEROKU
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
@@ -23,9 +23,9 @@ telegram.setWebHook(`${url}${TOKEN}`);
 
 //LOCAL TESTING
 //var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+//console.log('OPERATING LOCALLY.')
 
-
-// view all in next 24 hours
+// /DAY - VIEW ALL TARGETS IN NEXT 24 HOURS
 
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/day') === 0){
@@ -44,13 +44,17 @@ telegram.on("text", (message) => {
 		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
 		x = x + 1;
 		};
-	telegram.sendMessage(message.chat.id, allResults);
+	telegram.sendMessage(message.chat.id, allResults)
+	.then( prevmsg => {
+	console.log('pin test')
+	console.log(JSON.stringify(prevmsg));
+	telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
 		});
-  }
-});
+  })
+}});
 
 
-// view instructions
+// /INSTRUCTIONS - VIEW INSTRUCTIONS FOR BOT
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/help') === 0){
@@ -76,7 +80,7 @@ telegram.on("text", (message) => {
 });
 
 
-// view all after current
+// VIEW ALL TARGETS
 
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/all') === 0){
@@ -97,7 +101,7 @@ telegram.on("text", (message) => {
 	})}});
 
 
-// view all after current with IDs
+// VIEW ALL TARGETS WITH IDS
 
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/id') === 0){
@@ -117,83 +121,159 @@ telegram.on("text", (message) => {
   }
 });
 
-// add a target
+//ADD A TARGET + VERIFICATION
 
 telegram.on("text", (message) => {
-  if(message.text.toLowerCase().indexOf('/add') === 0) {
+	if(message.text.toLowerCase().indexOf('/add') === 0) {
+  		
+		var confirmation = 0;
+		var userID = message.from.id;
+		console.log(userID);
+
+		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(JSON.stringify(result));
+			
+			for (i in result) {
+				if ( userID == result[i].adminID) {
+					confirmation = 1 
+				}
+			};
+
+			if (confirmation == 0 ) {
+						telegram.sendMessage(message.chat.id, 'You don\'t have permission to add targets to NukeBot.');
+					} else {
+				
+				// START OF ADD TARGET CODE
+			
+				var params = message.text.split(" "); // split out the input
+				console.log(params);
+				
+				var activeUser = message.from.username;
+				var target = params[1];				// define target
+				console.log('target:' + target);
+				var nukes = Number(params[2]);		//convert nuke str to int
+				console.log(nukes);
+				var blockadeDays = nukes;
+				if (blockadeDays >= 6) {
+					blockadeDays = 6 }; 			//convert nukes to blockage length
+				console.log('blockade days: ' + blockadeDays);  	
+
+
+				var startDate = moment.utc(params[3]);		//define start date
+				console.log('start date: ' + startDate.format());
+				var endDate = moment.utc(params[3]);		//define end date
+				endDate = moment.utc(endDate).add(blockadeDays, 'days'); //add nukes to end date
+ 
+				//create json object for database
+	
+				var newTarget = { user: activeUser, target: target, nukes: nukes, blockadeStart: startDate.format(), blockadeEnd:  endDate.format() };
+ 
+				//test for bad date
+	
+					if(startDate.isValid() === false ) {
+						telegram.sendMessage(message.chat.id, '*Invalid date!* Please try again.', { parse_mode: "Markdown"});
+						} else if (isNaN(nukes) === true ) {
+							telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});
+						} else if (params.length != 4 ) {
+							telegram.sendMessage(message.chat.id, '*Invalid entry!* Please try again using: /add (target) (# of nukes) (YYYY-MM-DDTHH:MM:SS)', { parse_mode: "Markdown"});
+						} else {
+								db.collection("targets").insertOne(newTarget, function(err, res) {
+									if (err) throw err;
+									console.log("1 document inserted");
+									});
+									telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
+						};
+					}
+	})}
+});
+
+
+
+
+
+// /DELETE - DELETE A TARGET USING ID
+
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/delete') === 0) {
+
+		var confirmation = 0;
+		var userID = message.from.id;
+		console.log(userID);
+
+		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(JSON.stringify(result));
+		
+			for (i in result) {
+				if ( userID == result[i].adminID) {
+					confirmation = 1 
+				}
+			};
+			
+			if (confirmation == 0 ) {
+						telegram.sendMessage(message.chat.id, 'You don\'t have permission to delete targets to NukeBot.');
+					} else {
+					
+		//START OF DELETE CODE
+		
+		var params = message.text.split(" "); 	// split out the input
+		console.log(params);
+
+		toDeleteStr = params[1];
+// use the below if it gets hung up
+//5a24cba8567e1773d2f4e101
+//		var toDelete = { _id: ObjectId('5a24cba8567e1773d2f4e101') };
+		console.log('target to delete:' + toDelete);
+
+		if (params.length != 2 ) {
+					telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
+				} else { 
+					var toDelete = { _id: ObjectId(params[1]) };	// define target ID to delete
+					db.collection("targets").deleteOne(toDelete, function(err, res) {
+						if (err) throw err;
+						console.log("1 document deleted");
+						});
+						telegram.sendMessage(message.chat.id, 'Target deleted: ' + params[1]);
+						};
+					}
+		})}});
+
+//GET CURRENT UTC TIMESTAMP
+
+telegram.on("text", (message) => {
+
+	if(message.text.toLowerCase().indexOf('/current') === 0) {
   
-  	var params = message.text.split(" "); // split out the input
+    var params = message.text.split(" "); 	// split out the input
   	console.log(params);
   	
-  	var target = params[1];				// define target
-  	console.log('target:' + target);
-  	var nukes = Number(params[2]);		//convert nuke str to int
-  	console.log(nukes);
-	var blockadeDays = nukes;
-	if (blockadeDays >= 6) {
-		blockadeDays = 6 }; 			//convert nukes to blockage length
-	console.log('blockade days: ' + blockadeDays);  	
+  	var currentDate = new moment.utc()
+  	console.log(currentDate);
 
-
-  	var startDate = moment.utc(params[3]);		//define start date
-  	console.log('start date: ' + startDate.format());
-  	var endDate = moment.utc(params[3]);		//define end date
-	endDate = moment.utc(endDate).add(blockadeDays, 'days'); //add nukes to end date
- 
- 	//create json object for database
- 	
-   	var newTarget = { target: target, nukes: nukes, blockadeStart: startDate.format(), blockadeEnd:  endDate.format() };
- 
- 	//test for bad date
- 	
-  		if(startDate.isValid() === false ) {
-  			telegram.sendMessage(message.chat.id, '*Invalid date!* Please try again.', { parse_mode: "Markdown"});
-  			} else if (isNaN(nukes) === true ) {
-  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter a number of nukes (1 to 16).', { parse_mode: "Markdown"});
-  			} else if (params.length != 4 ) {
-  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please try again using: /add (target) (# of nukes) (YYYY-MM-DDTHH:MM:SS)', { parse_mode: "Markdown"});
+	if (params.length != 1 ) {
+  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
   			} else {
-					db.collection("targets").insertOne(newTarget, function(err, res) {
-						if (err) throw err;
-						console.log("1 document inserted");
-						});
-						telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
+					telegram.sendMessage(message.chat.id, currentDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC')
+//					.then( prevmsg => {
+//					console.log('pin test')
+//  					console.log(JSON.stringify(prevmsg));
+//						telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
+//					};
 				};
 	}
 });
 
-
-
-
-// delete a target
+// GTFO TEST
 
 telegram.on("text", (message) => {
-	if(message.text.toLowerCase().indexOf('/delete') === 0) {
-  
-  	var params = message.text.split(" "); 	// split out the input
-  	console.log(params);
 
-  	toDeleteStr = params[1];
-  	var toDelete = { _id: ObjectId(params[1]) };				// define target ID to delete
-  	console.log('target to delete:' + toDelete);
- 	
-	if (params.length != 2 ) {
-  				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
-  			} else {
-				db.collection("targets").deleteOne(toDelete, function(err, res) {
-					if (err) throw err;
-					console.log("1 document inserted");
-					});
-					telegram.sendMessage(message.chat.id, 'Target deleted: ' + params[1]);
-					};
-	}
-});
-
-
-// get current UTC
-
-telegram.on("text", (message) => {
-	if(message.text.toLowerCase().indexOf('/current') === 0) {
+	if(message.text.toLowerCase().indexOf('/gtfo') === 0) {
+	
+	if ( message.chat.id != 10 ) {
+	telegram.sendMessage(message.chat.id, 'see ya sucker!');
+	telegram.leaveChat(message.chat.id);}
+	else {
   
     var params = message.text.split(" "); 	// split out the input
   	console.log(params);
@@ -211,8 +291,102 @@ telegram.on("text", (message) => {
 						telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
 					});
 					};
-	}}
+	}}}
 );
+
+//GET USER ID
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/myid') === 0) {
+  
+    var params = message.text.split(" "); 	// split out the input
+  	console.log(params);
+  	
+  	var currentDate = new moment.utc()
+  	console.log(currentDate);
+
+	if (params.length != 1 ) {
+  				telegram.sendMessage(message.chat.id, 'It\'s pretty hard to mess this up.', { parse_mode: "Markdown"});
+  			} else {
+					telegram.sendMessage(message.chat.id, 'User ID for ' + message.from.username + ' is ' + message.from.id);
+					};
+	}
+});
+
+//ADD USER ID TO ADMIN LIST
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/adminadd') === 0) {
+  
+    var params = message.text.split(" "); 	// split out the input
+  	console.log(params);
+  	
+  	var newAdminName = params[1]
+  	var newAdminID = params[2];
+
+	var dbAdmin = { 'adminName' : newAdminName, 'adminID' : newAdminID };
+
+	db.collection("admins").insertOne(dbAdmin, function(err, res) {
+						if (err) throw err;
+						console.log("1 document inserted");
+						telegram.sendMessage(message.chat.id, 'New admin added! \n' + 'Name: ' + newAdminName + '\n' + 'Telegram ID: ' + newAdminID );
+						});
+	}
+});
+
+
+//SHOW ALL ADMINS
+telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/adminall') === 0) {
+  
+  	db.collection('admins').find({}).toArray((err, result) => {
+		if (err) return console.log(err);
+		console.log('RESULTS: \n' + JSON.stringify(result));
+		var allResults = 'All admins below: \n \n';
+		var x = 1
+		for (i in result) {
+			currentAdminName = result[i].adminName;
+			currentAdminID = result[i].adminID;
+			allResults = allResults.concat('Name: ' + currentAdminName + ' // ' + 'ID: ' + currentAdminID + '\n');
+			x = x + 1;
+		};
+	telegram.sendMessage(message.chat.id, allResults);
+	})
+}});
+
+
+
+
+//VERIFY - SEE IF YOU HAVE ACCESS TO BOT
+telegram.on("text", (message) => {
+
+	if(message.text.toLowerCase().indexOf('/verify') === 0) {
+
+	var confirmation = 0;
+  	var userID = message.from.id;
+	console.log(userID);
+	console.log(JSON.stringify(message));
+
+  	db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+		if (err) return console.log(err);
+		console.log(JSON.stringify(result));
+			
+		for (i in result) {
+			if ( userID == result[i].adminID) {
+				confirmation = 1 
+			}
+		};
+
+		if (confirmation == 0 ) {
+					telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
+				} else {
+					telegram.sendMessage(message.chat.id, 'You are a verified user. Go get those nukes!', { parse_mode: "Markdown"});
+				};
+		
+		})
+	}
+});
+
+
+//ARE YOU ALIVE?
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/alive') === 0) {
