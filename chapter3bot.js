@@ -14,16 +14,17 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 // HEROKU
+/*
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-
+*/
 
 //LOCAL TESTING
-//var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
-//console.log('OPERATING LOCALLY.')
+var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+console.log('OPERATING LOCALLY.')
 
 // /DAY - VIEW ALL TARGETS IN NEXT 24 HOURS
 
@@ -384,6 +385,63 @@ telegram.on("text", (message) => {
 		})
 	}
 });
+
+
+//TEST VERIFY WITH CALLBACKS - SEE IF YOU HAVE ACCESS TO BOT
+telegram.on("text", (message) => {
+
+	if(message.text.toLowerCase().indexOf('/vf') === 0) {
+
+	var confirmation = 0;
+  	var userID = message.from.id;
+	console.log(userID);
+	console.log(JSON.stringify(message));
+
+/*	function getAdmins() = {
+		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(JSON.stringify(result));
+			return result; 
+			})
+			};
+*/			
+
+	function getAdmins() {
+		var x = db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(JSON.stringify(result));
+			return result; 
+			})
+		return x};
+						
+	function verifyAdmin (userID, result, callback) {
+		var confirmation;
+		for (i in result) {
+			if ( userID == result[i].adminID) {
+				confirmation = 1;
+				callback(confirmation); 
+			};
+		}
+		return confirmation;
+		};
+	
+	console.log('userid: ' + userID);
+	
+	function veriResult (conResult) {
+		if (conResult == 0 ) {
+					telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
+				} else {
+					telegram.sendMessage(message.chat.id, 'You are a verified user. Go get those nukes!', { parse_mode: "Markdown"});
+				};
+		};
+		
+	
+	verifyAdmin(userID, getAdmins, veriResult);
+
+
+	}
+});
+
 
 
 //ARE YOU ALIVE?
