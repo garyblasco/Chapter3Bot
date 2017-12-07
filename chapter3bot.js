@@ -13,16 +13,18 @@ MongoClient.connect(dbURL, (err, database) => {
 	return console.log('Connected to database!')
 });
 
-// HEROKU LIVE
+// HEROKU LIVE 
+/*
 const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
+*/
 
 //LOCAL TESTING
-//var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
-//console.log('OPERATING LOCALLY.')
+var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+console.log('OPERATING LOCALLY.')
 
 
 //TIMESTAMP FUNCTION
@@ -135,18 +137,48 @@ telegram.on("text", (message) => {
   	var currentDate = moment.utc(new Date).format();
   	console.log(currentDate);
   	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
-	if (err) return console.log(err);
-	console.log(result);
-	var allResults = 'All targets after ' + currentDate + ': \n \n';
-	var x = 1
-	for (i in result) {
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' //  ' + result[i]._id + '\n');
-		x = x + 1;
-		};
-	telegram.sendMessage(message.chat.id, allResults);
-		});
-  }
-});
+		if (err) return console.log(err);
+		console.log(result);
+
+		for (i in result) {
+			telegram.sendMessage(message.chat.id, result[i].target + " " + result[i]._id);
+			};
+
+
+/*
+		var allResults = 'All targets after ' + currentDate + ': \n \n';
+		var x = 1
+		for (i in result) {
+			allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + result[i].blockadeEnd + ' //  ' + result[i]._id + '\n');
+			x = x + 1;
+			};
+		telegram.sendMessage(message.chat.id, allResults);
+*/
+
+
+
+/* callback version, but the messages are out of order
+
+		function sendTop(sendBottom) {
+			telegram.sendMessage(message.chat.id, result[i].target + ' @ ' + result[i].blockadeEnd + '\n')
+			sendBottom();
+			};
+			
+		function sendBottom() {
+			telegram.sendMessage(message.chat.id, result[i].target + result[i]._id + '\n');
+			};
+
+		function sendIDs(sendTop, sendBottom) {
+			sendTop(sendBottom);
+			};
+
+		for (i in result) {
+			sendTop(sendBottom);
+			};
+*/
+		
+	  })
+}});
 
 //ADD A TARGET + VERIFICATION
 
@@ -252,10 +284,12 @@ telegram.on("text", (message) => {
 		console.log(params);
 
 		toDeleteStr = params[1];
+		
 // use the below if it gets hung up
 //5a24cba8567e1773d2f4e101
 //		var toDelete = { _id: ObjectId('5a24cba8567e1773d2f4e101') };
-		console.log('target to delete:' + toDelete);
+
+		console.log('target to delete:' + toDeleteStr);
 
 		if (params.length != 2 ) {
 					telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
@@ -438,8 +472,9 @@ telegram.on("text", (message) => {
 			console.log(JSON.stringify(result));
 			for (i in result) {
 				if ( userID == result[i].adminID) {
+					console.log( '\n CHECKING \n' + userID + ' === ' + result[i].adminID +'\n \n')
 					confirmation = 1 
-				} else { confirmation = 0 };
+				};
 			};
 			messagingProcess(confirmation);	
 		});
