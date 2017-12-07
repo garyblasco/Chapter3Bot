@@ -26,10 +26,32 @@ telegram.setWebHook(`${url}${TOKEN}`);
 var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
 console.log('OPERATING LOCALLY.')
 
+
+//TIMESTAMP FUNCTION
+
+function getTimeStamp(message) {
+
+	var timestamp = { userid: message.from.id, 
+					userfirst: message.from.first_name, 
+					userlast: message.from.last_name, 
+					username: message.from.username,
+					messagetext: message.text,
+					chatid: message.chat.id,
+					chatname: message.chat.title,
+					date: message.date };
+	console.log('TIMESTAMP: \n');
+	console.log(JSON.stringify(timestamp));
+	console.log('\n');			
+	db.collection("allrequests").insertOne(timestamp);	
+};
+
+
+
 // /DAY - VIEW ALL TARGETS IN NEXT 24 HOURS
 
 telegram.on("text", (message) => {
   if(message.text.toLowerCase().indexOf('/day') === 0){
+  	getTimeStamp(message);
   	var currentDate = new moment.utc();
   	var nextDay = new moment.utc();
   	nextDay = nextDay.add(1, 'day');
@@ -59,6 +81,7 @@ telegram.on("text", (message) => {
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/help') === 0){
+  		getTimeStamp(message);
 		telegram.sendMessage(message.chat.id, 
 			'*INSTRUCTIONS FOR NUKEBOT!* \n \n'
 			+ 'To *ADD* a target, type the following command: \n \n'
@@ -84,7 +107,10 @@ telegram.on("text", (message) => {
 // VIEW ALL TARGETS
 
 telegram.on("text", (message) => {
+
   if(message.text.toLowerCase().indexOf('/all') === 0){
+
+  	getTimeStamp(message);
   	var currentDate = moment.utc(new Date).format();
   	console.log(currentDate);
   	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
@@ -105,7 +131,9 @@ telegram.on("text", (message) => {
 // VIEW ALL TARGETS WITH IDS
 
 telegram.on("text", (message) => {
+
   if(message.text.toLowerCase().indexOf('/id') === 0){
+  	getTimeStamp(message);
   	var currentDate = moment.utc(new Date).format();
   	console.log(currentDate);
   	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
@@ -126,7 +154,9 @@ telegram.on("text", (message) => {
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/add') === 0) {
-  		
+
+  	getTimeStamp(message);
+	
 		var confirmation = 0;
 		var userID = message.from.id;
 		console.log(userID);
@@ -198,6 +228,8 @@ telegram.on("text", (message) => {
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/delete') === 0) {
 
+		getTimeStamp(message);
+
 		var confirmation = 0;
 		var userID = message.from.id;
 		console.log(userID);
@@ -243,9 +275,9 @@ telegram.on("text", (message) => {
 //GET CURRENT UTC TIMESTAMP
 
 telegram.on("text", (message) => {
-
+	
 	if(message.text.toLowerCase().indexOf('/current') === 0) {
-  
+  	getTimeStamp(message);
     var params = message.text.split(" "); 	// split out the input
   	console.log(params);
   	
@@ -270,7 +302,7 @@ telegram.on("text", (message) => {
 telegram.on("text", (message) => {
 
 	if(message.text.toLowerCase().indexOf('/gtfo') === 0) {
-	
+  	getTimeStamp(message);
 	if ( message.chat.id != 10 ) {
 	telegram.sendMessage(message.chat.id, 'see ya sucker!');
 	telegram.leaveChat(message.chat.id);}
@@ -299,6 +331,7 @@ telegram.on("text", (message) => {
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/myid') === 0) {
   
+  	getTimeStamp(message);
     var params = message.text.split(" "); 	// split out the input
   	console.log(params);
   	
@@ -315,8 +348,9 @@ telegram.on("text", (message) => {
 
 //ADD USER ID TO ADMIN LIST
 telegram.on("text", (message) => {
+
 	if(message.text.toLowerCase().indexOf('/adminadd') === 0) {
-  
+  	getTimeStamp(message);
     var params = message.text.split(" "); 	// split out the input
   	console.log(params);
   	
@@ -336,8 +370,9 @@ telegram.on("text", (message) => {
 
 //SHOW ALL ADMINS
 telegram.on("text", (message) => {
+
 	if(message.text.toLowerCase().indexOf('/adminall') === 0) {
-  
+  	getTimeStamp(message);
   	db.collection('admins').find({}).toArray((err, result) => {
 		if (err) return console.log(err);
 		console.log('RESULTS: \n' + JSON.stringify(result));
@@ -360,7 +395,7 @@ telegram.on("text", (message) => {
 telegram.on("text", (message) => {
 
 	if(message.text.toLowerCase().indexOf('/verify') === 0) {
-
+  	getTimeStamp(message);
 	var confirmation = 0;
   	var userID = message.from.id;
 	console.log(userID);
@@ -387,58 +422,43 @@ telegram.on("text", (message) => {
 });
 
 
-//TEST VERIFY WITH CALLBACKS - SEE IF YOU HAVE ACCESS TO BOT
+//USER VERIFICATION WITH CALLBACKS - SEE IF YOU HAVE ACCESS TO BOT
 telegram.on("text", (message) => {
-
 	if(message.text.toLowerCase().indexOf('/vf') === 0) {
 
-	var confirmation = 0;
+  	getTimeStamp(message);
+
+  	//get ID of initiating user
   	var userID = message.from.id;
 	console.log(userID);
 	console.log(JSON.stringify(message));
-
-/*	function getAdmins() = {
+  	
+  	//compare userID against admins in database
+	function verificationProcess(userID, messagingProcess) {
 		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
 			if (err) return console.log(err);
 			console.log(JSON.stringify(result));
-			return result; 
-			})
+			for (i in result) {
+				if ( userID == result[i].adminID) {
+					confirmation = 1 
+				} else { confirmation = 0 };
 			};
-*/			
-
-	function getAdmins() {
-		var x = db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
-			if (err) return console.log(err);
-			console.log(JSON.stringify(result));
-			return result; 
-			})
-		return x};
-						
-	function verifyAdmin (userID, result, callback) {
-		var confirmation;
-		for (i in result) {
-			if ( userID == result[i].adminID) {
-				confirmation = 1;
-				callback(confirmation); 
-			};
-		}
-		return confirmation;
-		};
+			messagingProcess(confirmation);	
+		});
+	};
 	
-	console.log('userid: ' + userID);
-	
-	function veriResult (conResult) {
-		if (conResult == 0 ) {
+	//pass confirmation result to any messaging function
+	function messagingStart(confirmation) {
+		if (confirmation == 0 ) {
 					telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
 				} else {
+					// this could be anything
 					telegram.sendMessage(message.chat.id, 'You are a verified user. Go get those nukes!', { parse_mode: "Markdown"});
 				};
 		};
 		
+	verificationProcess(userID, messagingStart);	
 	
-	verifyAdmin(userID, getAdmins, veriResult);
-
-
 	}
 });
 
@@ -447,8 +467,11 @@ telegram.on("text", (message) => {
 //ARE YOU ALIVE?
 
 telegram.on("text", (message) => {
+
 	if(message.text.toLowerCase().indexOf('/alive') === 0) {
-  
+	
+  	getTimeStamp(message);
+	
     var params = message.text.split(" "); 	// split out the input
   	console.log(params);
   	
