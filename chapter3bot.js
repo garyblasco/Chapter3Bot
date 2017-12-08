@@ -27,7 +27,7 @@ telegram.setWebHook(`${url}${TOKEN}`);
 //console.log('OPERATING LOCALLY.')
 
 
-//TIMESTAMP FUNCTION
+//TIMESTAMP FUNCTION -- USED TO RECORD TIMESTAMPS OF ALL INTIATED COMMANDS
 
 function getTimeStamp(message) {
 
@@ -46,42 +46,70 @@ function getTimeStamp(message) {
 };
 
 
+//VERIFICATION FUNCTION -- USED AT THE START OF ADD/DELETE TO VERIFY ACCESS
+
+function verificationProcess(message, messagingProcess) {
+	var userID = message.from.id;
+	var confirmation = 0
+	db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+		if (err) return console.log(err);
+		//console.log(JSON.stringify(result));
+		for (i in result) {
+			if ( userID == result[i].adminID) {
+				console.log( '\n' + 'CHECKING USER ' + message.from.username + '\n' + userID + ' === ' + result[i].adminID +'\n \n')
+				confirmation = 1 
+			};
+		};
+		if (confirmation == 0 ) {
+				telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
+			} else {
+				// this could be anything
+				messagingProcess();
+				//telegram.sendMessage(message.chat.id, 'You are a verified user.');
+			};
+	});
+};
 
 // /DAY - VIEW ALL TARGETS IN NEXT 24 HOURS
 
 telegram.on("text", (message) => {
-  if(message.text.toLowerCase().indexOf('/day') === 0){
-  	getTimeStamp(message);
-  	var currentDate = new moment.utc();
-  	var nextDay = new moment.utc();
-  	nextDay = nextDay.add(1, 'day');
-  	console.log('current:' + currentDate.format());
-  	console.log('plus 1:' + nextDay.format());
-  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate.format(), $lte : nextDay.format()}}).sort({blockadeEnd: 1}).toArray((err, result) => {
-	if (err) return console.log(err);
-	console.log(result);
-	var allResults = 'All targets in the next 24 hours: \n \n';
-	var x = 1
-	for (i in result) {
-		currentResult = new moment.utc(result[i].blockadeEnd);
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
-		x = x + 1;
-		};
-	telegram.sendMessage(message.chat.id, allResults)
-	.then( prevmsg => {
-	console.log('pin test')
-	console.log(JSON.stringify(prevmsg));
-	telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
-		});
-  })
-}});
+	if(message.text.toLowerCase().indexOf('/day') === 0){
+  	
+  		getTimeStamp(message);
+  	
+		var currentDate = new moment.utc();
+		var nextDay = new moment.utc();
+		nextDay = nextDay.add(1, 'day');
+		
+		db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate.format(), $lte : nextDay.format()}}).sort({blockadeEnd: 1}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(result);
+			var allResults = 'All targets in the next 24 hours: \n \n';
+			var x = 1
+			for (i in result) {
+				currentResult = new moment.utc(result[i].blockadeEnd);
+				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+				x = x + 1;
+				};
+		telegram.sendMessage(message.chat.id, allResults)
+			.then( prevmsg => {
+				console.log('pin test')
+				console.log(JSON.stringify(prevmsg));
+				telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
+				});
+  		})
+	}
+});
+
 
 
 // /INSTRUCTIONS - VIEW INSTRUCTIONS FOR BOT
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/help') === 0){
+
   		getTimeStamp(message);
+
 		telegram.sendMessage(message.chat.id, 
 			'*INSTRUCTIONS FOR NUKEBOT!* \n \n'
 			+ 'To *ADD* a target, type the following command: \n \n'
@@ -100,51 +128,57 @@ telegram.on("text", (message) => {
 			+ '*/all* will display ALL upcoming targets \n'
 			+ '*/day* will display all targets in the next 24 hours' , 
 			{parse_mode: "Markdown"});
-  }
+	}
 });
 
 
 // VIEW ALL TARGETS
 
 telegram.on("text", (message) => {
+	if(message.text.toLowerCase().indexOf('/all') === 0){
 
-  if(message.text.toLowerCase().indexOf('/all') === 0){
+  		getTimeStamp(message);
+  		
+  		var currentDate = moment.utc(new Date).format();
+  		console.log(currentDate);
+  		db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(result);
+			var allResults = 'All targets after ' + currentDate + ': \n \n';
+			var x = 1
+			for (i in result) {
+				currentResult = new moment.utc(result[i].blockadeEnd);
+				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+				x = x + 1;
+			};
+			telegram.sendMessage(message.chat.id, allResults);
 
-  	getTimeStamp(message);
-  	var currentDate = moment.utc(new Date).format();
-  	console.log(currentDate);
-  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
-	if (err) return console.log(err);
-	console.log(result);
-	var allResults = 'All targets after ' + currentDate + ': \n \n';
-	var x = 1
-	for (i in result) {
-		currentResult = new moment.utc(result[i].blockadeEnd);
-		allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
-		x = x + 1;
-		};
-	telegram.sendMessage(message.chat.id, allResults);
-
-	})}});
+		})
+	}
+});
 
 
 // VIEW ALL TARGETS WITH IDS
 
 telegram.on("text", (message) => {
-
-  if(message.text.toLowerCase().indexOf('/id') === 0){
-  	getTimeStamp(message);
-  	var currentDate = moment.utc(new Date).format();
-  	console.log(currentDate);
-  	db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
-		if (err) return console.log(err);
-		console.log(result);
-
-		for (i in result) {
-			telegram.sendMessage(message.chat.id, result[i].target + " " + result[i]._id);
+	if(message.text.toLowerCase().indexOf('/id') === 0){
+  	
+  		getTimeStamp(message);
+  	
+  		var currentDate = moment.utc(new Date).format();
+  		console.log(currentDate);
+  		db.collection('targets').find({ 'blockadeEnd' : { $gte : currentDate}}).sort({blockadeEnd: 1}).toArray((err, result) => {
+			if (err) return console.log(err);
+			console.log(result);
+			for (i in result) {
+				telegram.sendMessage(message.chat.id, result[i].target + " " + result[i]._id);
 			};
 
+	  })
+	}
+});
 
+//OLD AND ALTERNATE VERSIONS
 /*
 		var allResults = 'All targets after ' + currentDate + ': \n \n';
 		var x = 1
@@ -153,11 +187,8 @@ telegram.on("text", (message) => {
 			x = x + 1;
 			};
 		telegram.sendMessage(message.chat.id, allResults);
-*/
 
-
-
-/* callback version, but the messages are out of order
+// callback version, but the messages are out of order
 
 		function sendTop(sendBottom) {
 			telegram.sendMessage(message.chat.id, result[i].target + ' @ ' + result[i].blockadeEnd + '\n')
@@ -177,36 +208,21 @@ telegram.on("text", (message) => {
 			};
 */
 		
-	  })
-}});
+
 
 //ADD A TARGET + VERIFICATION
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/add') === 0) {
 
-  	getTimeStamp(message);
-	
-		var confirmation = 0;
-		var userID = message.from.id;
-		console.log(userID);
-
-		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
-			if (err) return console.log(err);
-			console.log(JSON.stringify(result));
-			
-			for (i in result) {
-				if ( userID == result[i].adminID) {
-					confirmation = 1 
-				}
-			};
-
-			if (confirmation == 0 ) {
-						telegram.sendMessage(message.chat.id, 'You don\'t have permission to add targets to NukeBot.');
-					} else {
+  		getTimeStamp(message);
 				
-				// START OF ADD TARGET CODE
-			
+		// START OF ADD TARGET FUNCTION
+		
+		verificationProcess(message, addCommand);
+		
+		function addCommand() {
+				
 				var params = message.text.split(" "); // split out the input
 				console.log(params);
 				
@@ -245,64 +261,51 @@ telegram.on("text", (message) => {
 									});
 									telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
 						};
-					}
-	})}
+	}
+	}
 });
 
 
 
 
 
-// /DELETE - DELETE A TARGET USING ID
+// /DELETE - DELETE A TARGET USING ID + VERIFICATION
 
 telegram.on("text", (message) => {
 	if(message.text.toLowerCase().indexOf('/delete') === 0) {
 
 		getTimeStamp(message);
 
-		var confirmation = 0;
-		var userID = message.from.id;
-		console.log(userID);
-
-		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
-			if (err) return console.log(err);
-			console.log(JSON.stringify(result));
+		verificationProcess(message, deleteCommand);
 		
-			for (i in result) {
-				if ( userID == result[i].adminID) {
-					confirmation = 1 
-				}
-			};
+		//START OF DELETE TARGET FUNCTION
+		
+		function deleteCommand() {
 			
-			if (confirmation == 0 ) {
-						telegram.sendMessage(message.chat.id, 'You don\'t have permission to delete targets to NukeBot.');
-					} else {
-					
-		//START OF DELETE CODE
+			var params = message.text.split(" "); 	// split out the input
+			console.log(params);
+
+			toDeleteStr = params[1];
 		
-		var params = message.text.split(" "); 	// split out the input
-		console.log(params);
+			// use the below if it gets hung up
+			//5a24cba8567e1773d2f4e101
+			//var toDelete = { _id: ObjectId('5a24cba8567e1773d2f4e101') };
 
-		toDeleteStr = params[1];
-		
-// use the below if it gets hung up
-//5a24cba8567e1773d2f4e101
-//		var toDelete = { _id: ObjectId('5a24cba8567e1773d2f4e101') };
+			console.log('target to delete:' + toDeleteStr);
 
-		console.log('target to delete:' + toDeleteStr);
-
-		if (params.length != 2 ) {
-					telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
-				} else { 
-					var toDelete = { _id: ObjectId(params[1]) };	// define target ID to delete
-					db.collection("targets").deleteOne(toDelete, function(err, res) {
-						if (err) throw err;
-						console.log("1 document deleted");
-						});
-						telegram.sendMessage(message.chat.id, 'Target deleted: ' + params[1]);
-						};
-					}
-		})}});
+			if (params.length != 2 ) {
+						telegram.sendMessage(message.chat.id, '*Invalid entry!* Please enter ONLY the ID.', { parse_mode: "Markdown"});
+					} else { 
+						var toDelete = { _id: ObjectId(params[1]) };	// define target ID to delete
+						db.collection("targets").deleteOne(toDelete, function(err, res) {
+							if (err) throw err;
+							console.log("1 document deleted");
+							});
+							telegram.sendMessage(message.chat.id, 'Target deleted: ' + params[1]);
+							};
+		};					
+	}
+});
 
 //GET CURRENT UTC TIMESTAMP
 
@@ -461,10 +464,34 @@ telegram.on("text", (message) => {
   	getTimeStamp(message);
 
   	//get ID of initiating user
-  	var userID = message.from.id;
-	console.log(userID);
 	console.log(JSON.stringify(message));
-  	
+
+  	//compare userID against admins in database
+	function verificationProcess(messagingProcess) {
+		var userID = message.from.id;
+		var confirmation = 0
+		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
+			if (err) return console.log(err);
+			//console.log(JSON.stringify(result));
+			for (i in result) {
+				if ( userID == result[i].adminID) {
+					console.log( '\n CHECKING \n' + userID + ' === ' + result[i].adminID +'\n \n')
+					confirmation = 1 
+				};
+			};
+			if (confirmation == 0 ) {
+					telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
+				} else {
+					// this could be anything
+					//messagingProcess();
+					telegram.sendMessage(message.chat.id, 'You are a verified user.');
+				};
+		});
+	};
+
+
+
+/* original, and working  	
   	//compare userID against admins in database
 	function verificationProcess(userID, messagingProcess) {
 		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
@@ -489,8 +516,8 @@ telegram.on("text", (message) => {
 					telegram.sendMessage(message.chat.id, 'You are a verified user. Go get those nukes!', { parse_mode: "Markdown"});
 				};
 		};
-		
-	verificationProcess(userID, messagingStart);	
+*/		
+	verificationProcess();	
 	
 	}
 });
