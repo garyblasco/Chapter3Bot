@@ -1,26 +1,31 @@
-const moment = require('moment');
+//WELCOME TO NUKE BOT
 
+//MONGO
 var MongoClient = require('mongodb').MongoClient;
-
 const dbURL = process.env.MONGO;
-const TOKEN = process.env.TGBOT;
 var ObjectId = require('mongodb').ObjectID;
 var db;
-var TelegramBot = require('node-telegram-bot-api');
-var promise = require('promise');
 
+//TELEGRAM BOT
+var TelegramBot = require('node-telegram-bot-api');
+const TOKEN = process.env.TGBOT;
+
+//OTHER LIBRARIES
+var promise = require('promise');
+const moment = require('moment');
+
+//CONNECT TO DB
 MongoClient.connect(dbURL, (err, database) => {
 	if (err) return console.log(err);
 	db = database;
 	return console.log('Connected to database!')
-});
+
 
 // HEROKU LIVE 
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-//
 
 //LOCAL TESTING
 //var telegram = new TelegramBot(TOKEN, { polling: true });
@@ -323,11 +328,6 @@ telegram.on("text", (message) => {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
   			} else {
 					telegram.sendMessage(message.chat.id, currentDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC')
-//					.then( prevmsg => {
-//					console.log('pin test')
-//  					console.log(JSON.stringify(prevmsg));
-//						telegram.pinChatMessage(prevmsg.chat.id, prevmsg.message_id, {disable_notification: true})
-//					};
 				};
 	}
 });
@@ -402,7 +402,6 @@ telegram.on("text", (message) => {
 	}
 });
 
-
 //SHOW ALL ADMINS
 telegram.on("text", (message) => {
 
@@ -422,9 +421,6 @@ telegram.on("text", (message) => {
 	telegram.sendMessage(message.chat.id, allResults);
 	})
 }});
-
-
-
 
 //VERIFY - SEE IF YOU HAVE ACCESS TO BOT
 telegram.on("text", (message) => {
@@ -488,41 +484,11 @@ telegram.on("text", (message) => {
 				};
 		});
 	};
-
-
-
-/* original, and working  	
-  	//compare userID against admins in database
-	function verificationProcess(userID, messagingProcess) {
-		db.collection('admins').find({}, {adminID: true}).toArray((err, result) => {
-			if (err) return console.log(err);
-			console.log(JSON.stringify(result));
-			for (i in result) {
-				if ( userID == result[i].adminID) {
-					console.log( '\n CHECKING \n' + userID + ' === ' + result[i].adminID +'\n \n')
-					confirmation = 1 
-				};
-			};
-			messagingProcess(confirmation);	
-		});
-	};
 	
-	//pass confirmation result to any messaging function
-	function messagingStart(confirmation) {
-		if (confirmation == 0 ) {
-					telegram.sendMessage(message.chat.id, 'You don\'t have permission to use NukeBot.');
-				} else {
-					// this could be anything
-					telegram.sendMessage(message.chat.id, 'You are a verified user. Go get those nukes!', { parse_mode: "Markdown"});
-				};
-		};
-*/		
 	verificationProcess();	
 	
 	}
 });
-
-
 
 //ARE YOU ALIVE?
 
@@ -546,131 +512,7 @@ telegram.on("text", (message) => {
 	}
 });
 
-/*
-// Matches /test
-telegram.onText(/\/test/, function (msg) {
-	var inMonths = '';
-	var inDays = '';
-	var inHours = '';
-	var inMinutes = '';
-	var finalDate = '';
-	var theYear = moment().year();
-	console.log(theYear);
-  	const keyMonths = {
-    'reply_to_message_id': msg.message_id,
-    'reply_markup': { 'keyboard' : [ 
-		[ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun' ],
-		['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] ] },
-    'one_time_keyboard': true
-	};
-	var addingUser = msg.from.id 	
-
-
-//	var monthsChat = msg.chat.id;
-//	var monthsMsgID = msg.message_id;
-//	console.log(monthsChat + ' // ' + monthsMsgID);	
-	
-	telegram.sendMessage(msg.chat.id, 'Pick a month.', keyMonths);
-
-
-
-	telegram.onText(/\S\S\S/, function (msg2) {
-		inMonths = msg2.text;
-		if (inMonths === 'Jan') { inMonths = '01'}
-		else if (inMonths === 'Feb') { inMonths = '01'}
-		else if (inMonths === 'Mar') { inMonths = '01'}
-		else if (inMonths === 'Apr') { inMonths = '01'}
-		else if (inMonths === 'May') { inMonths = '01'}
-		else if (inMonths === 'Jun') { inMonths = '01'}
-		else if (inMonths === 'Jul') { inMonths = '01'}
-		else if (inMonths === 'Aug') { inMonths = '01'}
-		else if (inMonths === 'Sep') { inMonths = '01'}
-		else if (inMonths === 'Oct') { inMonths = '01'}
-		else if (inMonths === 'Nov') { inMonths = '01'}
-		else if (inMonths === 'Dec') { inMonths = '01'}
-		else {'Invalid entry.'};	
-		console.log('month: ' + inMonths);
-	  	const inputDays = {
-		'reply_to_message_id': msg2.message_id,
-		'reply_markup': { 'keyboard' : [ 
-			[ '01', '02', '03', '04', '05', '06', '07'],
-			[ '08', '09', '10', '11', '12', '13', '14'],
-			[ '15', '16', '17', '18', '19', '20', '21'],
-			[ '22', '23', '24', '25', '26', '27', '28'],
-			[ '29', '30', '31', '--', '--', '--', '--'] ] },
-			'one_time_keyboard': true
-			};
-	
-		if (msg.from.id === addingUser) {
-			telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDays )
-			
-			telegram.onText(/\d\d/, function (msg3) {
-			  inDays = msg3.text;
-			  console.log('days: ' +inDays);
-			  const keyHours = {
-				'reply_to_message_id': msg3.message_id,
-				'reply_markup': { 'keyboard' : [ 
-					[ '00', '01', '02', '03', '04', '05'],
-					[ '06', '07', '08', '09', '10', '11'],
-					[ '12', '13', '14', '15', '16', '17'],
-					[ '18', '19', '20', '21', '22', '23'] ] },
-					'one_time_keyboard': true
-					};
-	
-	
-			if (msg.from.id === addingUser) {
-					telegram.sendMessage(msg.chat.id, 'Pick an hour.', keyHours )									
-		
-					telegram.onText(/\d\d/, function (msg4) {
-					  inHours = msg4.text;
-					  console.log('hours: ' + inHours);
-					  const keyMinutes = {
-						'reply_to_message_id': msg4.message_id,
-						'reply_markup': { 'keyboard' : [ 
-							[ '00', '05', '10', '15'],
-							['20', '25', '30', '35'],
-							['40', '45', '50', '55'], ] },
-							'one_time_keyboard': true
-							};
-
-
-						if (msg.from.id === addingUser) {
-								telegram.sendMessage(msg.chat.id, 'Pick a minute.', keyMinutes )
-								
-								telegram.onText(/\d\d/, function (msg5) {
-								  inMinutes = msg5.text;
-								  var finalDateString = theYear + '-' + inMonths + '-' + inDays + 'T' + inHours + ':' + inMinutes + ':' + '00';
-								  console.log('minutes: ' + inMinutes);
-								  console.log('final date: ' + finalDate);
-								  finalDate = new moment.utc(finalDateString);
-								  console.log(finalDate);
-
-									if (msg.from.id === addingUser) {
-											telegram.sendMessage(msg.chat.id, 'Your date is ' + finalDate.format() )}});
-											
-								}})}})}})});
-
-
-
-/*
-telegram.onText(/\/test/, function (msg) {
-
-	telegram.sendMessage(msg.chat.id, 'pick dat month', {
-        force_reply: true,
-        reply_to_message_id: msg.message_id})
-    .then(payload => {
-    	console.log(payload.reply_to_message.text + ' /// ' + msg.text);
-		if (payload.reply_to_message.message_id == msg.message_id) {
-    		telegram.onText(/\d\d/, function (msg2) {
-    			console.log('this should be working');
-				telegram.sendMessage(msg2.chat.id, 'pick dat day', {
-        			force_reply: true,
-        			reply_to_message_id: msg2.message_id})
-
-		})}})});	
-		
-	        
-*/    
+// ADD NEW TARGET WITH KEYBOARD
  
 telegram.onText(/\/test/, function (startmsg) {
 
@@ -712,7 +554,7 @@ telegram.onText(/\/test/, function (startmsg) {
 
 		console.log('HELLO???');
 		telegram.removeTextListener(nukesReg);
-
+		
 		console.log(JSON.stringify(startmsg));
 		console.log(JSON.stringify(nukespayload));
 		console.log(JSON.stringify(msg));
@@ -869,5 +711,133 @@ telegram.onText(/\/test/, function (startmsg) {
 						
 		})})}})})}})})}})})}})})}})})});	
 		
+
+//OLD KEYBOARD TEST
+
+/*
+// Matches /test
+telegram.onText(/\/test/, function (msg) {
+	var inMonths = '';
+	var inDays = '';
+	var inHours = '';
+	var inMinutes = '';
+	var finalDate = '';
+	var theYear = moment().year();
+	console.log(theYear);
+  	const keyMonths = {
+    'reply_to_message_id': msg.message_id,
+    'reply_markup': { 'keyboard' : [ 
+		[ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun' ],
+		['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] ] },
+    'one_time_keyboard': true
+	};
+	var addingUser = msg.from.id 	
+
+
+//	var monthsChat = msg.chat.id;
+//	var monthsMsgID = msg.message_id;
+//	console.log(monthsChat + ' // ' + monthsMsgID);	
+	
+	telegram.sendMessage(msg.chat.id, 'Pick a month.', keyMonths);
+
+
+
+	telegram.onText(/\S\S\S/, function (msg2) {
+		inMonths = msg2.text;
+		if (inMonths === 'Jan') { inMonths = '01'}
+		else if (inMonths === 'Feb') { inMonths = '01'}
+		else if (inMonths === 'Mar') { inMonths = '01'}
+		else if (inMonths === 'Apr') { inMonths = '01'}
+		else if (inMonths === 'May') { inMonths = '01'}
+		else if (inMonths === 'Jun') { inMonths = '01'}
+		else if (inMonths === 'Jul') { inMonths = '01'}
+		else if (inMonths === 'Aug') { inMonths = '01'}
+		else if (inMonths === 'Sep') { inMonths = '01'}
+		else if (inMonths === 'Oct') { inMonths = '01'}
+		else if (inMonths === 'Nov') { inMonths = '01'}
+		else if (inMonths === 'Dec') { inMonths = '01'}
+		else {'Invalid entry.'};	
+		console.log('month: ' + inMonths);
+	  	const inputDays = {
+		'reply_to_message_id': msg2.message_id,
+		'reply_markup': { 'keyboard' : [ 
+			[ '01', '02', '03', '04', '05', '06', '07'],
+			[ '08', '09', '10', '11', '12', '13', '14'],
+			[ '15', '16', '17', '18', '19', '20', '21'],
+			[ '22', '23', '24', '25', '26', '27', '28'],
+			[ '29', '30', '31', '--', '--', '--', '--'] ] },
+			'one_time_keyboard': true
+			};
+	
+		if (msg.from.id === addingUser) {
+			telegram.sendMessage(msg.chat.id, 'Pick a day.', inputDays )
+			
+			telegram.onText(/\d\d/, function (msg3) {
+			  inDays = msg3.text;
+			  console.log('days: ' +inDays);
+			  const keyHours = {
+				'reply_to_message_id': msg3.message_id,
+				'reply_markup': { 'keyboard' : [ 
+					[ '00', '01', '02', '03', '04', '05'],
+					[ '06', '07', '08', '09', '10', '11'],
+					[ '12', '13', '14', '15', '16', '17'],
+					[ '18', '19', '20', '21', '22', '23'] ] },
+					'one_time_keyboard': true
+					};
+	
+	
+			if (msg.from.id === addingUser) {
+					telegram.sendMessage(msg.chat.id, 'Pick an hour.', keyHours )									
+		
+					telegram.onText(/\d\d/, function (msg4) {
+					  inHours = msg4.text;
+					  console.log('hours: ' + inHours);
+					  const keyMinutes = {
+						'reply_to_message_id': msg4.message_id,
+						'reply_markup': { 'keyboard' : [ 
+							[ '00', '05', '10', '15'],
+							['20', '25', '30', '35'],
+							['40', '45', '50', '55'], ] },
+							'one_time_keyboard': true
+							};
+
+
+						if (msg.from.id === addingUser) {
+								telegram.sendMessage(msg.chat.id, 'Pick a minute.', keyMinutes )
+								
+								telegram.onText(/\d\d/, function (msg5) {
+								  inMinutes = msg5.text;
+								  var finalDateString = theYear + '-' + inMonths + '-' + inDays + 'T' + inHours + ':' + inMinutes + ':' + '00';
+								  console.log('minutes: ' + inMinutes);
+								  console.log('final date: ' + finalDate);
+								  finalDate = new moment.utc(finalDateString);
+								  console.log(finalDate);
+
+									if (msg.from.id === addingUser) {
+											telegram.sendMessage(msg.chat.id, 'Your date is ' + finalDate.format() )}});
+											
+								}})}})}})});
+
+
+
+/*
+telegram.onText(/\/test/, function (msg) {
+
+	telegram.sendMessage(msg.chat.id, 'pick dat month', {
+        force_reply: true,
+        reply_to_message_id: msg.message_id})
+    .then(payload => {
+    	console.log(payload.reply_to_message.text + ' /// ' + msg.text);
+		if (payload.reply_to_message.message_id == msg.message_id) {
+    		telegram.onText(/\d\d/, function (msg2) {
+    			console.log('this should be working');
+				telegram.sendMessage(msg2.chat.id, 'pick dat day', {
+        			force_reply: true,
+        			reply_to_message_id: msg2.message_id})
+
+		})}})});	
+		
+	        
+*/
 		
 		
