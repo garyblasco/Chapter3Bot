@@ -22,16 +22,16 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 // HEROKU LIVE 
-/*
+///*
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-*/
+//*/
 
 //LOCAL TESTING
-var telegram = new TelegramBot(TOKEN, { polling: true });
-console.log('OPERATING LOCALLY.')
+//var telegram = new TelegramBot(TOKEN, { polling: true });
+//console.log('OPERATING LOCALLY.')
 
 
 //TIMESTAMP FUNCTION -- USED TO RECORD TIMESTAMPS OF ALL INTIATED COMMANDS
