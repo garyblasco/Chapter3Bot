@@ -1,29 +1,29 @@
 const moment = require('moment');
 
 var MongoClient = require('mongodb').MongoClient;
-var dbURL = 'mongodb://chapterthree:ChapterThree123$@ds119486.mlab.com:19486/chapterthree';
+
+const dbURL = process.env.MONGO;
+const TOKEN = process.env.TGBOT;
 var ObjectId = require('mongodb').ObjectID;
 var db;
 var TelegramBot = require('node-telegram-bot-api');
 var promise = require('promise');
 
 MongoClient.connect(dbURL, (err, database) => {
-	if (err) return console.log('Error!');
+	if (err) return console.log(err);
 	db = database;
 	return console.log('Connected to database!')
 });
 
 // HEROKU LIVE 
-///*
-const TOKEN = process.env.TELEGRAM_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN';
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-//*/
+//
 
 //LOCAL TESTING
-//var telegram = new TelegramBot('460749659:AAEk1s8RpxaMDJv44zC3C2ZFUxH7U4MtYJk', { polling: true });
+//var telegram = new TelegramBot(TOKEN, { polling: true });
 //console.log('OPERATING LOCALLY.')
 
 
