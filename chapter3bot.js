@@ -22,7 +22,7 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 // HEROKU LIVE 
-///*
+//*
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
@@ -31,6 +31,7 @@ telegram.setWebHook(`${url}${TOKEN}`);
 
 //LOCAL TESTING
 //var telegram = new TelegramBot(TOKEN, { polling: true });
+//var telegram = new TelegramBot(TOKEN, options);
 //console.log('OPERATING LOCALLY.')
 
 
@@ -95,7 +96,7 @@ telegram.on("text", (message) => {
 			var x = 1
 			for (i in result) {
 				currentResult = new moment.utc(result[i].blockadeEnd);
-				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm') + ' UTC \n');
 				x = x + 1;
 				};
 		telegram.sendMessage(message.chat.id, allResults)
@@ -155,7 +156,7 @@ telegram.on("text", (message) => {
 			var x = 1
 			for (i in result) {
 				currentResult = new moment.utc(result[i].blockadeEnd);
-				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm:ss') + ' UTC \n');
+				allResults = allResults.concat('Target ' + x + ': ' + result[i].target + ' @ ' + currentResult.format('MMMM Do YYYY, HH:mm') + ' UTC \n');
 				x = x + 1;
 			};
 			telegram.sendMessage(message.chat.id, allResults);
@@ -266,7 +267,7 @@ telegram.on("text", (message) => {
 									if (err) throw err;
 									console.log("1 document inserted");
 									});
-									telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format());
+									telegram.sendMessage(message.chat.id, 'New Target Added: ' + target + ' @ ' + endDate.format('MMMM Do YYYY, HH:mm'));
 						};
 	}
 	}
@@ -329,7 +330,7 @@ telegram.on("text", (message) => {
 	if (params.length != 1 ) {
   				telegram.sendMessage(message.chat.id, '*Invalid entry!* Please use only the command.', { parse_mode: "Markdown"});
   			} else {
-					telegram.sendMessage(message.chat.id, currentDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC')
+					telegram.sendMessage(message.chat.id, currentDate.format('MMMM Do YYYY, HH:mm') + ' UTC')
 				};
 	}
 });
@@ -641,9 +642,16 @@ telegram.onText(/\/test/, function (startmsg) {
 					const keyMinutes = {
 					'reply_to_message_id': msg4.message_id,
 					'reply_markup': { 'keyboard' : [ 
-						[ 'M00', 'M05', 'M10', 'M15'],
-						[ 'M20', 'M25', 'M30', 'M35'],
-						[ 'M40', 'M45', 'M50', 'M55'] ],
+						[ 'M00', 'M01', 'M02', 'M03', 'M04', 'M05'],
+						[ 'M06', 'M07', 'M08', 'M09', 'M10', 'M11'],
+						[ 'M12', 'M13', 'M14', 'M15', 'M16', 'M17'],
+						[ 'M18', 'M19', 'M20', 'M21', 'M22', 'M23'],
+						[ 'M24', 'M25', 'M26', 'M27', 'M28', 'M29'],
+						[ 'M30', 'M31', 'M32', 'M33', 'M34', 'M35'],
+						[ 'M36', 'M37', 'M38', 'M39', 'M40', 'M41'],
+						[ 'M42', 'M43', 'M44', 'M45', 'M46', 'M47'],
+						[ 'M48', 'M49', 'M50', 'M51', 'M52', 'M53'],
+						[ 'M54', 'M55', 'M56', 'M57', 'M58', 'M59'] ],
 						'one_time_keyboard': true,
 						'selective': true,
 						}};
@@ -681,15 +689,12 @@ telegram.onText(/\/test/, function (startmsg) {
 						console.log('start date: ' + startDate.format());
 						var endDate = moment.utc(finalDateString);				//define end date
 						endDate = moment.utc(endDate).add(blockadeDays, 'days'); //add nukes to end date
- 
-					
-					
+
 						if ( msg5.from.id == initUser ) {
 							//console.log('last outgoing: ' + payload4.message_id + ' last incoming: ' + msg5.reply_to_message.message_id);
 							telegram.sendMessage(msg5.chat.id, 'Please review the below and SUBMIT or CANCEL. \n \n' + 'Target: ' + addName + '\n' + 'Nukes: ' + intNukes + '\n' + 'Attack Date: ' + startDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC' + '\n' + 'Blockade End: ' + endDate.format('MMMM Do YYYY, HH:mm:ss') + ' UTC', finalMsg )
 							.then(payload5 => { 
 								telegram.onText(confirmReg, function (msg6) {
-
 
 							console.log(msg6.text);
 							telegram.removeTextListener(monthReg);
@@ -698,6 +703,21 @@ telegram.onText(/\/test/, function (startmsg) {
 							telegram.removeTextListener(minReg);
 							telegram.removeTextListener(confirmReg);
 
+							function deleteAll() {
+								telegram.deleteMessage(startmsg.chat.id, startmsg.message_id);
+								telegram.deleteMessage(nukespayload.chat.id, nukespayload.message_id);
+								telegram.deleteMessage(payload.chat.id, payload.message_id);
+								telegram.deleteMessage(payload2.chat.id, payload2.message_id);
+								telegram.deleteMessage(payload3.chat.id, payload3.message_id);
+								telegram.deleteMessage(payload4.chat.id, payload4.message_id);
+								telegram.deleteMessage(msg.chat.id, msg.message_id);
+								telegram.deleteMessage(msg2.chat.id, msg2.message_id);
+								telegram.deleteMessage(msg3.chat.id, msg3.message_id);
+								telegram.deleteMessage(msg4.chat.id, msg4.message_id);
+								telegram.deleteMessage(msg5.chat.id, msg5.message_id);
+								telegram.deleteMessage(msg6.chat.id, msg6.message_id);
+							};
+							
 							const closeOut = {
 								'reply_markup': {
 									'remove_keyboard': true,
@@ -706,12 +726,14 @@ telegram.onText(/\/test/, function (startmsg) {
 
 							if (msg6.text == 'Submit') {
 								telegram.sendMessage(msg6.chat.id, 'Added a new target! And how!', closeOut);
-								telegram.removeTextListener(confirmReg) }
+								telegram.removeTextListener(confirmReg);
+								deleteAll()}
 							else {telegram.sendMessage(msg6.chat.id, 'Snake, what\'s wrong? Snake?! Snaaaaake!', closeOut);
-								telegram.removeTextListener(confirmReg) };
+								telegram.removeTextListener(confirmReg);
+								deleteAll()};
 						
 						
-		})})}})})}})})}})})}})})}})})});	
+		})})}})})}})})}})})}})})}})})});
 		
 
 //OLD KEYBOARD TEST

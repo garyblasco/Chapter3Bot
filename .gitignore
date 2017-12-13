@@ -1,5 +1,6 @@
 /node_modules
 /crap
 /backups
+/other
 .DS_Store
 command_list.txt
