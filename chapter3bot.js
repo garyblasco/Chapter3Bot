@@ -22,16 +22,14 @@ MongoClient.connect(dbURL, (err, database) => {
 });
 
 // HEROKU LIVE 
-//*
 const options = { webHook: { port: process.env.PORT }};
 const url = process.env.APP_URL; // 'https://<app-name>.herokuapp.com:443';
 var telegram = new TelegramBot(TOKEN, options);
 telegram.setWebHook(`${url}${TOKEN}`);
-//*/
+
 
 //LOCAL TESTING
 //var telegram = new TelegramBot(TOKEN, { polling: true });
-//var telegram = new TelegramBot(TOKEN, options);
 //console.log('OPERATING LOCALLY.')
 
 
@@ -519,6 +517,7 @@ telegram.on("text", (message) => {
  
 telegram.onText(/\/test/, function (startmsg) {
 
+	console.log(JSON.stringify(startmsg));
 	var initUser = startmsg.from.id;
 	var addArray = startmsg.text.split(" ");
 	var addName = addArray[1];
@@ -543,13 +542,13 @@ telegram.onText(/\/test/, function (startmsg) {
 
  	const keyNukes = {
 		'reply_to_message_id': startmsg.message_id,
-		'reply_markup': { 'keyboard' : [ 
+		"reply_markup": { 'keyboard' : [ 
 			[ 'N01', 'N02', 'N03', 'N04'],
 			[ 'N05', 'N06', 'N07', 'N08'], 
 			[ 'N09', 'N10', 'N11', 'N12'],
 			[ 'N13', 'N14', 'N15', 'N16'] ],
     		'one_time_keyboard': true,
-    		'selective': true,
+    		"selective": true,
 			}};
 		
 	telegram.sendMessage(startmsg.chat.id, 'How many nukes did the target have at the start of your infiltration?', keyNukes )
@@ -566,12 +565,12 @@ telegram.onText(/\/test/, function (startmsg) {
 		
 		const keyMonths = {
 			'reply_to_message_id': msg.message_id,
-			'reply_markup': { 'keyboard' : [ 
+			"reply_markup": { 'keyboard' : [ 
 				[ 'Jan.', 'Feb.', 'Mar.', 'Apr.'],
 				[ 'May.', 'Jun.', 'Jul.', 'Aug.'], 
 				[ 'Sep.', 'Oct.', 'Nov.', 'Dec.'] ],
 				'one_time_keyboard': true,
-				'selective': true,
+				"selective": true,
 				}};
 			//nukespayload.id == msg.reply_to_message.id
 		if ( msg.from.id == initUser ) {
@@ -598,14 +597,14 @@ telegram.onText(/\/test/, function (startmsg) {
 
 			const keyDays = {
 			'reply_to_message_id': msg2.message_id,
-			'reply_markup': { 'keyboard' : [ 
+			"reply_markup": { 'keyboard' : [ 
 				[ 'D01', 'D02', 'D03', 'D04', 'D05', 'D06', 'D07'],
 				[ 'D08', 'D09', 'D10', 'D11', 'D12', 'D13', 'D14'],
 				[ 'D15', 'D16', 'D17', 'D18', 'D19', 'D20', 'D21'],
 				[ 'D22', 'D23', 'D24', 'D25', 'D26', 'D27', 'D28'],
 				[ 'D29', 'D30', 'D31', '--', '--', '--', '--'] ],
 				'one_time_keyboard': true,
-				'selective': true,
+				"selective": true,
 				}};
 			
 			
@@ -620,13 +619,13 @@ telegram.onText(/\/test/, function (startmsg) {
 				inDays = msg3.text.substring(1,3);
 				const keyHours = {
 				'reply_to_message_id': msg3.message_id,
-				'reply_markup': { 'keyboard' : [ 
+				"reply_markup": { 'keyboard' : [ 
 					[ 'H00', 'H01', 'H02', 'H03', 'H04', 'H05'],
 					[ 'H06', 'H07', 'H08', 'H09', 'H10', 'H11'],
 					[ 'H12', 'H13', 'H14', 'H15', 'H16', 'H17'],
 					[ 'H18', 'H19', 'H20', 'H21', 'H22', 'H23'] ],
 				'one_time_keyboard': true,
-				'selective': true,
+				"selective": true,
 				}};
 			
 			
@@ -641,7 +640,7 @@ telegram.onText(/\/test/, function (startmsg) {
 					inHours = msg4.text.substring(1,3);
 					const keyMinutes = {
 					'reply_to_message_id': msg4.message_id,
-					'reply_markup': { 'keyboard' : [ 
+					"reply_markup": { 'keyboard' : [ 
 						[ 'M00', 'M01', 'M02', 'M03', 'M04', 'M05'],
 						[ 'M06', 'M07', 'M08', 'M09', 'M10', 'M11'],
 						[ 'M12', 'M13', 'M14', 'M15', 'M16', 'M17'],
@@ -653,7 +652,7 @@ telegram.onText(/\/test/, function (startmsg) {
 						[ 'M48', 'M49', 'M50', 'M51', 'M52', 'M53'],
 						[ 'M54', 'M55', 'M56', 'M57', 'M58', 'M59'] ],
 						'one_time_keyboard': true,
-						'selective': true,
+						"selective": true,
 						}};
 					
 							
@@ -666,16 +665,27 @@ telegram.onText(/\/test/, function (startmsg) {
 						telegram.removeTextListener(minReg);
 						inMinutes = msg5.text.substring(1,3);
 						console.log('substring minutes: ' + inMinutes);
+
+
 						const finalMsg = {
-							'reply_to_message_id': msg5.message_id,
-							'reply_markup': 
+							"reply_markup": 
+//							'reply_to_message_id': msg5.message_id,
 								{ 'keyboard' : [ 
 									['Submit'] , 
 									['Cancel'] ],  
 								'one_time_keyboard': true, 
-								'selective': true }
+								'selective': false }
 								};
-				
+
+/*						const finalMsgObj = { 'keyboard' : [ 
+									['Submit'] , 
+									['Cancel'] ],  
+								'one_time_keyboard': true, 
+								"selective": true };
+
+								
+						const finalMsg = {"reply_markup":JSON.stringify(finalMsgObj)};
+*/
 					
 						var finalDateString = theYear + '-' + inMonths + '-' + inDays + 'T' + inHours + ':' + inMinutes + ':' + '00';
 					
@@ -718,11 +728,7 @@ telegram.onText(/\/test/, function (startmsg) {
 								telegram.deleteMessage(msg6.chat.id, msg6.message_id);
 							};
 							
-							const closeOut = {
-								'reply_markup': {
-									'remove_keyboard': true,
-									'selective': true }
-									};
+							const closeOut = {"reply_markup":{"remove_keyboard":true,"selective":true}};
 
 							if (msg6.text == 'Submit') {
 								telegram.sendMessage(msg6.chat.id, 'Added a new target! And how!', closeOut);
@@ -750,7 +756,7 @@ telegram.onText(/\/test/, function (msg) {
 	console.log(theYear);
   	const keyMonths = {
     'reply_to_message_id': msg.message_id,
-    'reply_markup': { 'keyboard' : [ 
+    "reply_markup": { 'keyboard' : [ 
 		[ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun' ],
 		['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] ] },
     'one_time_keyboard': true
@@ -784,7 +790,7 @@ telegram.onText(/\/test/, function (msg) {
 		console.log('month: ' + inMonths);
 	  	const inputDays = {
 		'reply_to_message_id': msg2.message_id,
-		'reply_markup': { 'keyboard' : [ 
+		"reply_markup": { 'keyboard' : [ 
 			[ '01', '02', '03', '04', '05', '06', '07'],
 			[ '08', '09', '10', '11', '12', '13', '14'],
 			[ '15', '16', '17', '18', '19', '20', '21'],
@@ -801,7 +807,7 @@ telegram.onText(/\/test/, function (msg) {
 			  console.log('days: ' +inDays);
 			  const keyHours = {
 				'reply_to_message_id': msg3.message_id,
-				'reply_markup': { 'keyboard' : [ 
+				"reply_markup": { 'keyboard' : [ 
 					[ '00', '01', '02', '03', '04', '05'],
 					[ '06', '07', '08', '09', '10', '11'],
 					[ '12', '13', '14', '15', '16', '17'],
@@ -818,7 +824,7 @@ telegram.onText(/\/test/, function (msg) {
 					  console.log('hours: ' + inHours);
 					  const keyMinutes = {
 						'reply_to_message_id': msg4.message_id,
-						'reply_markup': { 'keyboard' : [ 
+						"reply_markup": { 'keyboard' : [ 
 							[ '00', '05', '10', '15'],
 							['20', '25', '30', '35'],
 							['40', '45', '50', '55'], ] },
